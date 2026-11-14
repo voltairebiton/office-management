@@ -10,7 +10,7 @@
 
 ## Next usable milestone: offices and room inventory
 
-Choose the database and ORM, then implement these as complete workflows:
+Use Neon PostgreSQL, choose the ORM, and add the initial migrations. Then implement these as complete workflows:
 
 1. Organization/member projections and office-scoped permissions.
 2. Office and room creation, editing, and archiving.

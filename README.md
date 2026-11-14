@@ -42,6 +42,14 @@ A signed-in user without organization context is sent to `/workspace-required`. 
 
 Authentication wiring requires a real WorkOS environment for an end-to-end sign-in check. A successful build alone does not verify an external sign-in flow.
 
+## Database
+
+The selected database is **PostgreSQL hosted on Neon**. The ORM, migrations, and application connection are the next implementation step.
+
+Create a Neon project and put its pooled connection string in `.env.local` as `DATABASE_URL`. The variable is reserved in `.env.example`; the current boilerplate does not yet connect to it. Each tenant's records will share the database and be scoped by organization ID as described in the domain model.
+
+See [Neon's pricing](https://neon.com/pricing) for current free-plan allowances.
+
 ## Commands
 
 | Command         | Purpose                    |
@@ -85,7 +93,7 @@ docs/
 - Office helpers receive notifications and prepare/deliver orders.
 - Staff management and fulfillment use authenticated, office-scoped access.
 
-See [the domain model](docs/domain-model.md) and [the roadmap](docs/roadmap.md). The database and ORM have not been chosen.
+See [the domain model](docs/domain-model.md) and [the roadmap](docs/roadmap.md). Neon PostgreSQL is the selected database; the ORM remains to be chosen.
 
 ## References
 

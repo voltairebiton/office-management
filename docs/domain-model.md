@@ -249,7 +249,7 @@ Subsequent complete features could include refreshment ordering through desk QR 
 
 Attendance is deferred. If added later, attendance or room presence records will capture actual check-in/out activity separately from an employee's normal room assignment. The exact attendance workflow can be designed when that feature is selected.
 
-Authentication, tenant isolation, and data consistency are part of the foundation. Future work adds functioning capabilities to it. Database and ORM choices remain open; this model does not depend on either choice.
+Authentication, tenant isolation, and data consistency are part of the foundation. Future work adds functioning capabilities to it. The selected database is PostgreSQL hosted on Neon. The ORM remains to be chosen, and database connectivity and migrations remain planned.
 
 ## WorkOS references
 
