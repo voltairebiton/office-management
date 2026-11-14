@@ -35,23 +35,28 @@ import { adjustStock as recordStockAdjustment } from "@/lib/adjustment-service";
 import { removeRoomRequirement, setRoomRequirement } from "@/lib/room-requirement-service";
 import { getWorkOSIdentityProvider } from "@/lib/workos-client";
 import { renameWorkspace } from "@/lib/workspace-settings-service";
+import { reportOperationFailure } from "@/lib/diagnostics";
 
 function value(formData, field) {
   const entry = formData.get(field);
   return typeof entry === "string" ? entry : "";
 }
 
-function actionError(error) {
+function actionError(error, operation) {
   const code = ["VALIDATION", "CONFLICT", "NOT_FOUND", "FORBIDDEN", "DEPENDENCY_UNAVAILABLE"].includes(error?.code)
     ? error.code
     : "DEPENDENCY_UNAVAILABLE";
+  const requestId = reportOperationFailure(operation, error);
   return {
     ok: false,
     error: {
       code,
-      message: code === "DEPENDENCY_UNAVAILABLE" ? "We couldn’t save this change. Try again shortly." : error.message,
+      message: code === "DEPENDENCY_UNAVAILABLE"
+        ? `We couldn’t save this change. Try again shortly.${requestId ? ` Reference: ${requestId}.` : ""}`
+        : error.message,
       fieldErrors: error?.fieldErrors ?? {},
       dependents: error?.dependents ?? {},
+      requestId,
     },
   };
 }
@@ -99,7 +104,7 @@ async function submitOffice(formData, operation) {
     revalidatePath("/dashboard");
     return { ok: true, message: operation === "create" ? "Office created." : "Office updated." };
   } catch (error) {
-    return actionError(error);
+    return actionError(error, `office.${operation}`);
   }
 }
 
@@ -113,7 +118,7 @@ async function submitRoom(formData, operation) {
     revalidatePath("/dashboard");
     return { ok: true, message: operation === "create" ? "Room created." : "Room updated." };
   } catch (error) {
-    return actionError(error);
+    return actionError(error, `room.${operation}`);
   }
 }
 
@@ -133,7 +138,7 @@ export async function saveWorkspaceNameAction(previousState, formData) {
     revalidatePath("/dashboard");
     return { ok: true, message: `Workspace name saved as ${organization.name}.` };
   } catch (error) {
-    return actionError(error);
+    return actionError(error, "workspace.name.update");
   }
 }
 
@@ -148,7 +153,7 @@ export async function archiveOfficeAction(previousState, formData) {
     revalidatePath("/dashboard");
     return { ok: true, message: "Office archived." };
   } catch (error) {
-    return actionError(error);
+    return actionError(error, "office.archive");
   }
 }
 
@@ -167,7 +172,7 @@ export async function archiveRoomAction(previousState, formData) {
     revalidatePath("/dashboard");
     return { ok: true, message: "Room archived." };
   } catch (error) {
-    return actionError(error);
+    return actionError(error, "room.archive");
   }
 }
 
@@ -188,12 +193,12 @@ export async function manageOfficeAccessAction(previousState, formData) {
         value(formData, "officeId"),
       );
     } else {
-      return actionError(Object.assign(new Error("Choose an access change."), { code: "VALIDATION" }));
+      return actionError(Object.assign(new Error("Choose an access change."), { code: "VALIDATION" }), "office-access.update");
     }
     revalidatePath("/dashboard");
     return { ok: true, message: operation === "grant" ? "Office access granted." : "Office access removed." };
   } catch (error) {
-    return actionError(error);
+    return actionError(error, `office-access.${operation === "grant" ? "grant" : "revoke"}`);
   }
 }
 
@@ -223,7 +228,7 @@ export async function saveRoomAssignmentAction(previousState, formData) {
     revalidatePath("/dashboard");
     return { ok: true, message: roomId ? "Room assignment saved." : "Room assignment ended." };
   } catch (error) {
-    return actionError(error);
+    return actionError(error, "room-assignment.update");
   }
 }
 
@@ -239,7 +244,7 @@ export async function saveCatalogItemAction(previousState, formData) {
     revalidatePath("/dashboard");
     return { ok: true, message: itemId ? "Catalog item updated." : "Catalog item created." };
   } catch (error) {
-    return actionError(error);
+    return actionError(error, itemId ? "catalog-item.update" : "catalog-item.create");
   }
 }
 
@@ -250,7 +255,7 @@ export async function archiveCatalogItemAction(previousState, formData) {
     revalidatePath("/dashboard");
     return { ok: true, message: "Catalog item archived." };
   } catch (error) {
-    return actionError(error);
+    return actionError(error, "catalog-item.archive");
   }
 }
 
@@ -273,7 +278,7 @@ export async function saveStorageLocationAction(previousState, formData) {
     revalidatePath("/dashboard");
     return { ok: true, message: locationId ? "Stock location updated." : "Storage location created." };
   } catch (error) {
-    return actionError(error);
+    return actionError(error, locationId ? "stock-location.update" : "stock-location.create");
   }
 }
 
@@ -288,7 +293,7 @@ export async function archiveStockLocationAction(previousState, formData) {
     revalidatePath("/dashboard");
     return { ok: true, message: "Stock location archived." };
   } catch (error) {
-    return actionError(error);
+    return actionError(error, "stock-location.archive");
   }
 }
 
@@ -303,7 +308,7 @@ export async function ensureRoomStockLocationAction(previousState, formData) {
     revalidatePath("/dashboard");
     return { ok: true, message: "Room stock location is ready." };
   } catch (error) {
-    return actionError(error);
+    return actionError(error, "room-stock-location.ensure");
   }
 }
 
@@ -328,7 +333,7 @@ export async function receiveStockAction(previousState, formData) {
       nextRequestKey: randomUUID(),
     };
   } catch (error) {
-    return actionError(error);
+    return actionError(error, "stock.receipt");
   }
 }
 
@@ -356,7 +361,7 @@ export async function transferStockAction(previousState, formData) {
       nextRequestKey: randomUUID(),
     };
   } catch (error) {
-    return actionError(error);
+    return actionError(error, "stock.transfer");
   }
 }
 
@@ -387,7 +392,7 @@ export async function adjustStockAction(previousState, formData) {
       nextRequestKey: randomUUID(),
     };
   } catch (error) {
-    return actionError(error);
+    return actionError(error, "stock.adjustment");
   }
 }
 
@@ -404,7 +409,7 @@ export async function saveRoomRequirementAction(previousState, formData) {
     revalidatePath("/dashboard");
     return { ok: true, message: "Target saved: " + requirement.targetQuantity + ".", requirementId: requirement.id };
   } catch (error) {
-    return actionError(error);
+    return actionError(error, "room-requirement.save");
   }
 }
 
@@ -419,6 +424,6 @@ export async function removeRoomRequirementAction(previousState, formData) {
     revalidatePath("/dashboard");
     return { ok: true, message: "Room target removed. Existing stock remains on hand." };
   } catch (error) {
-    return actionError(error);
+    return actionError(error, "room-requirement.remove");
   }
 }

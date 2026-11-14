@@ -7,6 +7,7 @@ import { PeopleWorkspace } from "@/components/people-workspace";
 import { CatalogWorkspace } from "@/components/catalog-workspace";
 import { RoomNeedsWorkspace } from "@/components/room-needs-workspace";
 import { loadWorkspaceOverview } from "@/lib/workspace-dashboard-service";
+import { reportOperationFailure } from "@/lib/diagnostics";
 
 export const metadata = { title: "Workspace" };
 
@@ -22,8 +23,8 @@ export default async function DashboardPage({ searchParams }) {
   if (["overview", "movements"].includes(view)) {
     try {
       data = await loadWorkspaceOverview(authorization);
-    } catch {
-      data = { ...data, error: true };
+    } catch (error) {
+      data = { ...data, error: true, errorRequestId: reportOperationFailure(`workspace.${view}`, error) };
     }
   }
   const officeContent = view === "offices" && !accessDenied

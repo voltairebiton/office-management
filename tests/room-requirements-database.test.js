@@ -190,7 +190,7 @@ test("C09 target lifecycle and room needs reconcile with stock, scope, filters, 
       }, transaction);
       assert.equal(removed.isActive, false);
       const afterRemoval = await listRoomNeeds(fixture.managerContext, { officeId: fixture.office.id }, transaction);
-      assert.ok(afterRemoval.rows.some((row) => row.itemId === fixture.tissues.id && row.targetQuantity === null && row.deployed === 4));
+      assert.ok(afterRemoval.rows.some((row) => row.itemId === fixture.tissues.id && row.target === null && row.deployed === 4));
       assert.equal(afterRemoval.total, 3);
 
       const [auditCount] = await transaction.select().from(auditEvents)

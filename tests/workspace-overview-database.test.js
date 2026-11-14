@@ -19,7 +19,8 @@ import {
 import { buildAuthorizationContext } from "../src/lib/authorization.js";
 import { loadWorkspaceOverview } from "../src/lib/workspace-dashboard-service.js";
 import { renameWorkspace } from "../src/lib/workspace-settings-service.js";
-import { receiveStock, transferStock } from "../src/lib/stock-service.js";
+import { receiveStock } from "../src/lib/stock-service.js";
+import { transferStock } from "../src/lib/transfer-service.js";
 import { setRoomRequirement } from "../src/lib/room-requirement-service.js";
 import { resolveTestDatabaseUrl } from "../scripts/test-database-config.js";
 

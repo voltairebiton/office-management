@@ -6,6 +6,7 @@ import { removeRoomRequirementAction, saveRoomRequirementAction } from "@/app/ac
 const initialState = { ok: null, message: "", error: null };
 
 function ActionMessage({ state }) {
+  if (state?.error) return <p className="om-feedback is-error" role="alert">{state.error.message}</p>;
   if (!state?.message) return null;
   return <p className={state.ok ? "om-feedback is-success" : "om-feedback is-error"} role="status">{state.message}</p>;
 }
