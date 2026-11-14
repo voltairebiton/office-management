@@ -75,4 +75,16 @@ test("C03 office service denies unauthorized and unscoped requests before databa
       fieldErrors: { name: "Enter a name.", code: "Use 1–32 letters, numbers, hyphens, or underscores." },
     });
   });
+
+  await t.test("database uniqueness violations reject with a stable conflict result", async () => {
+    const duplicateDatabase = {
+      async transaction() {
+        throw Object.assign(new Error("database detail must not escape"), { code: "23505" });
+      },
+    };
+    await assert.rejects(
+      createOffice(adminContext, { name: "Duplicate", code: "DUP" }, duplicateDatabase),
+      { code: "CONFLICT", message: "That code is already in use in this location." },
+    );
+  });
 });

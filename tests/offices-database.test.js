@@ -92,6 +92,11 @@ test("C03 office and room services enforce scope, history, and audit in Postgres
           membership: adminMembership,
           offices: [office],
         });
+        await assert.rejects(
+          createOffice(officeAdminContext, { name: "Duplicate office", code: officeCode.toLowerCase() }, transaction),
+          { code: "CONFLICT" },
+          "office codes are unique within one tenant after normalization",
+        );
 
         const [otherOrganization] = await transaction
           .insert(organizations)

@@ -27,7 +27,7 @@ function isDatabaseConstraintError(error, code) {
 
 function mapDatabaseError(error) {
   if (isDatabaseConstraintError(error, "23505")) {
-    return serviceError("CONFLICT", "That code is already in use in this location.");
+    throw serviceError("CONFLICT", "That code is already in use in this location.");
   }
   throw error;
 }
