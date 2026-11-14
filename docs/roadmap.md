@@ -1,5 +1,7 @@
 # Implementation roadmap
 
+The detailed execution source is the [MVP plan and contract index](mvp/README.md). It defines all remaining work, dependencies, acceptance criteria, and mandatory [TDD evidence](mvp/testing.md). None of the twelve contracts is marked complete yet.
+
 ## Implemented foundation
 
 - One Next.js application written in JavaScript.

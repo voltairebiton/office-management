@@ -17,6 +17,10 @@ The app runs without credentials so contributors can view the starter. Staff pag
 
 The database foundation is implemented. Office CRUD, WorkOS synchronization, office-level permission services, visitor management, inventory, QR ordering, and notifications remain planned. The authenticated dashboard shows the actual foundation state without fabricated operational data. The separate `/preview` route demonstrates the intended interface using fictional records. See [interface design and scope](docs/design.md).
 
+## MVP execution plan
+
+See the [MVP status and contract index](docs/mvp/README.md) for the complete scope, dependencies, and twelve implementation contracts. New MVP work follows the [TDD policy](docs/mvp/testing.md): behavior tests first, then implementation, regression checks, and recorded completion evidence.
+
 ## Local development
 
 Use Node.js 24 LTS (recommended; see `.nvmrc`) and npm. Node.js 22.13 or newer is supported.
