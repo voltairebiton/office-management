@@ -1,6 +1,6 @@
 # C09 — Room targets and shortage visibility
 
-Status: Implementation underway; PostgreSQL CI pending. Dependencies: C04, C07, C08.
+Status: Implementation complete; corrected PostgreSQL CI rerun pending. Dependencies: C04, C07, C08.
 
 ## User outcome
 
@@ -45,9 +45,9 @@ No automatic replenishment, attendance-based targets, subscriptions, or cross-it
 
 | Criterion | Test/check path | Red failure or live-check prerequisite | Green result | Commit/evidence |
 | --- | --- | --- | --- | --- |
-| AC1–AC3 | tests/unit/room-requirements.test.js; tests/room-requirements-database.test.js | Unit cases failed against the initial calculation/validation stubs; database migration and service acceptance are queued for CI. | Zero targets, exact targets, shortages, surplus, untracked stock, nonnegative quantities, and stale target versions are covered by passing unit tests. | Working tree; CI pending |
-| AC4–AC6 | tests/room-requirements-database.test.js | Local isolated TEST_DATABASE_URL is not configured. | Database cases connect receipts/deployments/consumption/count corrections, preserve visible stock without a target, count distinct rooms, group shortages by item unit, and show assigned headcount only. | Working tree; CI pending |
-| AC5, AC7 | src/lib/room-requirement-service.js; tests/room-requirements-database.test.js | PostgreSQL filter/aggregate and deployment revalidation acceptance awaits CI. | Query enforces organization and assigned-office scope, uses stable pagination, and links shortages to the existing server-validated deployment form. | Working tree; CI pending |
-| UI | src/components/room-needs-workspace.js; src/components/room-requirement-forms.js | Live WorkOS browser journey requires a configured staging user and organization. | Room target add/edit/remove controls, office/room/item/status/search filters, grouped shortage totals, and deployment shortcuts are implemented. | Build and live journey pending |
+| AC1–AC3 | tests/unit/room-requirements.test.js; tests/room-requirements-database.test.js | Unit cases failed against the initial calculation/validation stubs. The first CI run exposed a stale-version fixture that accidentally repeated the current target, which the service accepts idempotently. | Fixture now uses a different target with the current expected version; unit cases cover zero targets, exact targets, shortages, surplus, and untracked stock. Corrected PostgreSQL rerun is pending. | d7d7f6b + working tree; CI 43624751047 partial |
+| AC4–AC6 | tests/room-requirements-database.test.js | Local isolated TEST_DATABASE_URL is not configured. | The first CI run applied the migration and passed target listing, shortage aggregates, authorization, and stock-related SQL reads before the stale-version assertion. Corrected rerun will cover the remaining lifecycle assertions. | d7d7f6b + working tree; rerun pending |
+| AC5, AC7 | src/lib/room-requirement-service.js; tests/room-requirements-database.test.js | Corrected PostgreSQL rerun pending. | Query enforces tenant and assigned-office scope, stable pagination, item totals, and distinct room counts by office; shortage links still revalidate current deployment stock on submit. | Working tree; CI pending |
+| UI | src/components/room-needs-workspace.js; src/components/room-requirement-forms.js | Live WorkOS browser journey requires a configured staging user and organization. | Room target add/edit/remove, office/room/item/status/search filters, grouped shortage totals, and deployment shortcuts are implemented. Unit, lint, build, and public-preview mobile browser checks pass locally. | Working tree; live journey pending |
 
 Do not mark complete based on a UI screenshot, a build alone, or mocked provider success alone.

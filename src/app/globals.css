@@ -566,6 +566,16 @@ code {
 .ws-settings > div { border-top: 1px solid var(--ws-border); padding: 18px 0; display: grid; grid-template-columns: 180px minmax(0, 1fr); gap: 20px; font-size: 12px; }
 .ws-settings dt { color: var(--ws-muted); }
 .ws-settings dd { margin: 0; overflow-wrap: anywhere; }
+.ws-settings-form { border-top: 1px solid var(--ws-border); padding: 18px 24px 22px; }
+.ws-settings-form > label { display: block; margin-bottom: 8px; color: var(--ws-muted); font-size: 12px; }
+.ws-settings-name-row { display: flex; gap: 10px; max-width: 560px; }
+.ws-settings-name-row input { min-width: 0; flex: 1; border: 1px solid var(--ws-border); border-radius: 8px; padding: 10px 12px; color: var(--ws-text); font: inherit; }
+.ws-settings-name-row button { border: 0; border-radius: 8px; padding: 0 15px; color: #fff; background: var(--ws-primary); font: inherit; font-weight: 600; cursor: pointer; }
+.ws-settings-name-row button:disabled { opacity: .65; cursor: wait; }
+.ws-settings-error, .ws-settings-success, .ws-settings-note { margin: 8px 0 0; font-size: 12px; }
+.ws-settings-error { color: #a82e2e; }
+.ws-settings-success { color: #27734a; }
+.ws-settings-note { border-top: 1px solid var(--ws-border); padding: 18px 24px; color: var(--ws-muted); }
 .ws-menu-button { display: none; }
 .ws-mobile-dialog { background: var(--ws-pine); color: #e4eeea; border: 0; max-width: 300px; width: calc(100vw - 45px); height: 100dvh; max-height: 100dvh; margin: 0; padding: 32px 16px 20px; }
 .ws-mobile-dialog::backdrop { background: #122e2b88; }
@@ -638,6 +648,9 @@ code {
   .ws-planned h2 { font-size: 25px; }
   .ws-planned-steps { grid-template-columns: 1fr; }
   .ws-settings > div { grid-template-columns: 1fr; gap: 6px; }
+  .ws-settings-form { padding-inline: 17px; }
+  .ws-settings-name-row { flex-direction: column; }
+  .ws-settings-name-row button { min-height: 42px; }
 }
 
 /* Small labels remain readable on dense operational screens. */

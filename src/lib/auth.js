@@ -38,6 +38,7 @@ export async function requireOrganization() {
     user: session.user,
     workosOrganizationId: session.organizationId,
     organizationId: identity.organization.id,
+    organizationName: identity.organization.name,
     membershipId: identity.membership.id,
     role: authorization.role,
     capabilities: authorization.capabilities,

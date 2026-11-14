@@ -72,6 +72,32 @@ test("C01 WorkOS provider adapter", async (t) => {
     ]);
   });
 
+  await t.test("updates a verified organization name using its WorkOS organization ID", async () => {
+    const { workos, calls } = fakeWorkOS({
+      organizations: {
+        updateOrganization: async (options) => {
+          calls.push(["updateOrganization", options]);
+          return { ...records.organization, name: options.name };
+        },
+      },
+    });
+    const provider = createWorkOSIdentityProvider({ workos });
+    const updated = await provider.updateOrganizationName({ organizationId: "org_01", name: "Manila Operations" });
+    assert.equal(updated.name, "Manila Operations");
+    assert.deepEqual(calls.at(-1), ["updateOrganization", { organization: "org_01", name: "Manila Operations" }]);
+  });
+
+  await t.test("hides provider details when an organization update fails", async () => {
+    const { workos } = fakeWorkOS({
+      organizations: {
+        updateOrganization: async () => { throw new Error("private provider response"); },
+      },
+    });
+    const provider = createWorkOSIdentityProvider({ workos });
+    await assert.rejects(provider.updateOrganizationName({ organizationId: "org_01", name: "Updated" }), (error) =>
+      error.code === "IDENTITY_PROVIDER_UNAVAILABLE" && !error.message.includes("private provider response"));
+  });
+
   await t.test("does not trust an absent, pending, or mismatched membership", async () => {
     for (const membership of [null, { ...records.membership, status: "pending" }, {
       ...records.membership,

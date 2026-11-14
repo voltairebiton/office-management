@@ -21,3 +21,19 @@ export const workspaceViews = Object.fromEntries(navigation.flatMap(group => gro
 export function resolveView(value) {
   return typeof value === "string" && Object.hasOwn(workspaceViews, value) ? value : "overview";
 }
+
+export function canAccessWorkspaceView(view, capabilities = []) {
+  const allowed = new Set(capabilities);
+  if (view === "settings" || view === "refreshments" || view === "visitors") return true;
+  if (view === "overview" || view === "offices") return allowed.has("offices:read");
+  if (view === "people") return allowed.has("members:read") || allowed.has("assignments:manage") || allowed.has("assignments:read:self");
+  if (["inventory", "requirements", "movements"].includes(view)) return allowed.has("inventory:read");
+  return false;
+}
+
+export function visibleNavigation(capabilities = [], preview = false) {
+  return navigation.map((group) => ({
+    ...group,
+    items: group.items.filter((item) => preview || canAccessWorkspaceView(item.id, capabilities)),
+  })).filter((group) => group.items.length > 0);
+}

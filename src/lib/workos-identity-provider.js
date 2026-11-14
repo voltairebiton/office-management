@@ -20,6 +20,25 @@ export function createWorkOSIdentityProvider({ workos, webhookSecret } = {}) {
   }
 
   return {
+    async updateOrganizationName({ organizationId, name } = {}) {
+      const verifiedOrganizationId = requiredId(organizationId, "verified organization ID");
+      const verifiedName = typeof name === "string" ? name.trim() : "";
+      if (!verifiedName) {
+        throw providerError("IDENTITY_REQUEST_INVALID", "A workspace name is required.");
+      }
+      try {
+        return await workos.organizations.updateOrganization({
+          organization: verifiedOrganizationId,
+          name: verifiedName,
+        });
+      } catch {
+        throw providerError(
+          "IDENTITY_PROVIDER_UNAVAILABLE",
+          "The identity provider could not update this workspace. Retry the request.",
+        );
+      }
+    },
+
     async loadActiveIdentity({ userId, organizationId } = {}) {
       const verifiedUserId = requiredId(userId, "verified user ID");
       const verifiedOrganizationId = requiredId(

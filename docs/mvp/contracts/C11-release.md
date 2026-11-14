@@ -1,6 +1,6 @@
 # C11 — MVP acceptance and release readiness
 
-Status: Open. Dependencies: C00–C10.
+Status: Open; local release documentation is in place, but staging and production acceptance require external setup. Dependencies: C00–C10.
 
 ## User outcome
 
@@ -39,6 +39,8 @@ Label tests `C11-AC1`, `C11-AC2`, etc., matching the numbered criteria below. Sh
 
 Hosting/account credentials and real-user acceptance are release dependencies. No paid plan purchase, real invitations, or production data reset is implied by this planning contract.
 
+The operator procedure is documented in [the release runbook](../../operations/release-runbook.md). It intentionally leaves host selection, production URL configuration, restricted database role grants, and restore rehearsal as explicit open gates.
+
 ## Completion record
 
 - [ ] Acceptance tests written first; meaningful red failures recorded.
@@ -49,6 +51,9 @@ Hosting/account credentials and real-user acceptance are release dependencies. N
 
 | Criterion | Test/check path | Red failure or live-check prerequisite | Green result | Commit/evidence |
 | --- | --- | --- | --- | --- |
-| Pending | — | — | — | — |
+| AC1 | README.md; docs/database.md; docs/operations/release-runbook.md; .github/workflows/ci.yml | Full corrected C09/C10 PostgreSQL CI run is pending. Local isolated `TEST_DATABASE_URL` is unavailable. | Clean CI installs dependencies, migrates its disposable PostgreSQL 18 service, and runs unit, database, lint, build, and browser checks. Runbook documents separate test/application/migration URLs and sanitized setup. | Working tree; CI pending |
+| AC2–AC4, AC6 | tests/workspace-overview-database.test.js; C01–C10 database suites | Requires real staging WorkOS credentials, signed webhook endpoint, a staging administrator and manager, hosting URLs, and separate runtime/migration roles. | Service tests cover scoped queries, role checks, audit, stale updates, and database failure; real sign-in, revocation, deployment, and runtime-grant behavior remain unverified. | External staging/release gate |
+| AC5 | npm test; npm run test:db; npm run lint; npm run build; npm run test:e2e | C09/C10 CI rerun pending. | Latest local checks: 111 unit assertions pass, lint/build pass, and all five anonymous/mobile browser checks pass, including office filter URL/back behavior. These do not replace database CI or an authenticated browser run. | Working tree; CI pending |
+| AC7–AC9 | docs/operations/release-runbook.md | Hosting and account selection are not complete; backup/restore has not been rehearsed. | Safe diagnostic and recovery procedure is documented. No deployed URL, release migration version, restore evidence, or live acceptance date is claimed. | Release remains open |
 
 Do not mark complete based on a UI screenshot, a build alone, or mocked provider success alone.

@@ -13,9 +13,9 @@ A personal, MIT-licensed office management project built with Next.js and JavaSc
 - Office filters, searchable sample lists, mobile navigation, and explicit planned states for future office modules.
 - Public `/preview` design preview with clearly labelled fictional data; no database access or mutations.
 
-The app runs without credentials so contributors can view the starter. Staff pages redirect to setup until authentication is configured. There is no authentication bypass or demo staff account.
+The app runs without credentials so contributors can view the starter and fictional `/preview`. Staff pages redirect to setup until authentication is configured. There is no authentication bypass or demo staff account.
 
-Organization identity, office and room management, staff access and room assignments, the catalog, stock receipts, office-local deployments and returns, and reasoned consumption/damage/count corrections are implemented. Their PostgreSQL acceptance suites run in CI; contracts also track the remaining live authenticated browser acceptance. Visitor management, desk and visitor QR ordering, office-helper queues/notifications, and release hosting remain future MVP work. Real WorkOS sign-in, server API access, webhook delivery, and first-admin bootstrap still need staging credentials and acceptance. The separate `/preview` route demonstrates the interface using fictional records. See [interface design and scope](docs/design.md).
+Organization identity, office and room management, staff access and room assignments, the catalog, receipts, room deployments and returns, stock corrections, room targets, shortage counts, and the live dashboard overview are implemented. PostgreSQL acceptance suites run in CI; contracts track the remaining live authenticated browser acceptance. Visitor management, desk and visitor QR ordering, and office-helper queues/notifications remain future feature work. Production hosting, real WorkOS acceptance, signed webhook delivery, restricted runtime database grants, and backup/restore rehearsal remain release work. The separate `/preview` route demonstrates the interface using fictional records. See [interface design and scope](docs/design.md) and the [release runbook](docs/operations/release-runbook.md).
 
 ## MVP execution plan
 
@@ -28,17 +28,17 @@ Use Node.js 24 LTS (recommended; see `.nvmrc`) and npm. Node.js 22.13 or newer i
 ```sh
 npm ci
 cp -n .env.example .env.local
-npm run dev
+npm run dev -- --port 3107
 ```
 
-Open [localhost:3000](http://localhost:3000). Configuration can be added after starting the app; restart the server after changing environment variables.
+Open [localhost:3107](http://localhost:3107). Configuration can be added after starting the app; restart the server after changing environment variables.
 
 ## WorkOS setup
 
 1. Create a WorkOS application with AuthKit enabled.
-2. Set the redirect URI to `http://localhost:3000/auth/callback`.
-3. Set the initiate login URI to `http://localhost:3000/auth/sign-in`.
-4. Set the default sign-out URI to `http://localhost:3000`.
+2. Set the redirect URI to `http://localhost:3107/auth/callback`.
+3. Set the initiate login URI to `http://localhost:3107/auth/sign-in`.
+4. Set the default sign-out URI to `http://localhost:3107`.
 5. Add the application's client ID and server API key to `.env.local` as `WORKOS_CLIENT_ID` and `WORKOS_API_KEY`.
 6. Generate a cookie password with `openssl rand -base64 32` and put it in `.env.local` as `WORKOS_COOKIE_PASSWORD`.
 7. Add the application database URL, run `npm run db:migrate`, and restart the development server.
@@ -48,7 +48,7 @@ Open [localhost:3000](http://localhost:3000). Configuration can be added after s
 
 After choosing a public HTTPS host, configure a WorkOS webhook for `organization_membership.created`, `organization_membership.updated`, and `organization_membership.deleted` at `/api/webhooks/workos`. Save its signing secret as `WORKOS_WEBHOOK_SECRET`; the endpoint verifies signatures and reconciles current provider state before committing event IDs.
 
-A signed-in user without organization context is sent to `/workspace-required`. Every protected organization request now fetches the user, organization, and active membership from WorkOS and transactionally upserts their local projections. It fails closed when the provider or database is unavailable. The bootstrap command verifies the WorkOS membership and administrator role before granting the first local organization admin; normal login never promotes a user. Organization switching, webhook delivery, and office permission services remain in progress.
+A signed-in user without organization context is sent to `/workspace-required`. Protected organization requests fetch the user, organization, and active membership from WorkOS and transactionally upsert their local projections. Requests fail closed when the provider or database is unavailable. The bootstrap command verifies the WorkOS membership and administrator role before granting the first local organization admin; normal login never promotes a user. Real WorkOS sign-in and webhook delivery still need staging acceptance.
 
 Authentication wiring requires a real WorkOS environment for an end-to-end sign-in check. A successful build alone does not verify an external sign-in flow.
 
@@ -67,7 +67,7 @@ npm run test:db
 npm run test:e2e
 ```
 
-The foundation migration creates users, organizations, memberships, offices, rooms, office access records, and room assignments. The next migration adds processed WorkOS webhook event IDs for idempotent delivery. Business records share the database and are scoped by the local organization UUID. See [database setup and constraints](docs/database.md).
+Versioned migrations create users, organizations, memberships, offices, rooms, office access records, room assignments, catalog items, stock locations, the immutable movement ledger, correction history, room targets, and audit events. Business records are scoped by the local organization UUID. See [database setup and constraints](docs/database.md) and the [release runbook](docs/operations/release-runbook.md).
 
 See [Neon's pricing](https://neon.com/pricing) for current free-plan allowances.
 

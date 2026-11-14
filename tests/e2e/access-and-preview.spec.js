@@ -24,11 +24,17 @@ test("sign-in cannot skip configuration and create an unverified staff session",
 test("preview office filter consistently scopes office counts and shortage rows", async ({ page }) => {
   await page.goto("/preview");
   await page.getByLabel("Filter by office").selectOption("north");
+  await expect(page).toHaveURL(/office=north/);
   await expect(page.getByRole("main").locator(".ws-context")).toContainText("North Office");
   await expect(page.getByRole("main").locator(".ws-office-list").getByText("Central Office", { exact: true })).toHaveCount(0);
   await expect(page.getByText("Reception", { exact: true })).toBeVisible();
   await expect(page.getByRole("main").locator(".ws-table").getByText("Operations room", { exact: true })).toHaveCount(0);
   await expect(page.getByText("26", { exact: true })).toBeVisible();
+  await page.getByRole("navigation", { name: "Workspace navigation" }).getByRole("link", { name: "Catalog & stock" }).click();
+  await expect(page).toHaveURL(/view=inventory&office=north/);
+  await page.goBack();
+  await expect(page).toHaveURL(/preview\?office=north$/);
+  await expect(page.getByRole("main").locator(".ws-context")).toContainText("North Office");
 });
 
 test("mobile navigation opens, follows a link, and supports keyboard dismissal", async ({ page }) => {

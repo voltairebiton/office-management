@@ -315,7 +315,7 @@ export async function listRoomNeeds(context, input = {}, database = getDatabase(
     select * from computed where ${filter}
   )`;
 
-  const [rowsResult, totalsResult, itemTotalsResult] = await Promise.all([
+  const [rowsResult, totalsResult, itemTotalsResult, officeTotalsResult] = await Promise.all([
     database.execute(sql`${common}
       select * from filtered
       order by office_name, room_code, item_sku, room_id, item_id
@@ -332,6 +332,11 @@ export async function listRoomNeeds(context, input = {}, database = getDatabase(
       where shortage_quantity > 0
       group by item_id, item_name, item_sku, item_unit
       order by item_sku, item_id`),
+    database.execute(sql`${common}
+      select office_id,
+        count(distinct room_id) filter (where shortage_quantity > 0)::integer as room_count
+      from filtered
+      group by office_id`),
   ]);
   const rows = rowsResult.rows.map((row) => {
     const target = numberValue(row.target_quantity);
@@ -362,6 +367,7 @@ export async function listRoomNeeds(context, input = {}, database = getDatabase(
     pageSize: options.pageSize,
     totalPages: Math.ceil(total / options.pageSize),
     roomCountNeedingSupplies: Number(totalsResult.rows[0]?.room_count_needing_supplies ?? 0),
+    roomCountNeedingSuppliesByOffice: Object.fromEntries(officeTotalsResult.rows.map((row) => [row.office_id, Number(row.room_count)])),
     shortagesByItem: itemTotalsResult.rows.map((row) => ({
       itemId: row.item_id,
       itemName: row.item_name,

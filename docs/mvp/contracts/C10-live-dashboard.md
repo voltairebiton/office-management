@@ -1,6 +1,6 @@
 # C10 — Live workspace integration and usable staff screens
 
-Status: Open. Dependencies: C03–C09.
+Status: Implementation complete; CI and live WorkOS acceptance pending. Dependencies: C03–C09.
 
 ## User outcome
 
@@ -33,6 +33,8 @@ Label tests `C10-AC1`, `C10-AC2`, etc., matching the numbered criteria below. Sh
 - Public preview/anonymous tests assert no staff data or mutation access.
 - Review real populated and empty states; screenshots support visual evidence, not substitutes for behavior assertions.
 
+The live overview is assembled by `loadWorkspaceOverview()` from the verified organization context. Office and room totals are active-only; room-assigned people are distinct across the selected scope; shortage room counts are distinct from requirement lines. Recent transfers are grouped to one activity and capped at twelve. The overview never substitutes preview fixtures on database failure. Organization renames are admin-only, go through the verified WorkOS organization ID, use a stale-name check, and write an audit event.
+
 ## Boundaries and dependencies
 
 No analytics warehouse, chart-only metrics, custom dashboard widgets, or implementation jargon in normal staff workflows.
@@ -47,6 +49,11 @@ No analytics warehouse, chart-only metrics, custom dashboard widgets, or impleme
 
 | Criterion | Test/check path | Red failure or live-check prerequisite | Green result | Commit/evidence |
 | --- | --- | --- | --- | --- |
-| Pending | — | — | — | — |
+| AC1–AC3 | tests/unit/workspace-overview.test.js; tests/workspace-overview-database.test.js | Overview mapper tests failed against the initial null stub. Database suite proves empty-live vs database-failure behavior and active-only/distinct aggregates; local isolated TEST_DATABASE_URL is unavailable. | Unit mapper now distinguishes live empty from preview and filters non-shortage rows. PostgreSQL query tests are wired into CI and await the next run. | Working tree; CI pending |
+| AC2–AC3 | src/lib/workspace-dashboard-service.js; src/lib/room-requirement-service.js | Live database evidence pending CI. | Overview shows active office/room totals, per-office assignment and shortage counts, and distinct tenant-wide assigned people. Office selection filters visible lists and metrics without expanding authorized office scope. | Working tree; CI pending |
+| AC4 | src/lib/workspace-navigation.js; tests/unit/workspace-navigation.test.js; src/app/dashboard/page.js | Capability tests cover employee menu visibility and direct-view authorization decisions. | Navigation is capability-filtered; employees with own-assignment access open their own assignments by default; server views retain service-level authorization. | Working tree; unit green; CI pending |
+| AC5, AC7 | src/components/workspace-dashboard.js; `tests/e2e/access-and-preview.spec.js` | Authenticated WorkOS forms, keyboard errors, and the live mobile journey require a staging login. | Office selection is kept in the URL, preserved across workspace links, and restored by browser back. Live errors do not show preview data; pending, field-error, and retry states are present. Public preview mobile and keyboard checks pass locally. | Working tree; E2E 5/5 locally; live journey pending |
+| AC6 | src/lib/workspace-settings-service.js; src/lib/workos-identity-provider.js; tests/unit/workos-identity-provider.test.js; tests/workspace-overview-database.test.js | Provider call is mocked in automated tests; staging update requires configured WorkOS API credentials. | Only `tenant:manage` can rename; stale names conflict, WorkOS confirms before local update, and the name change is audited. Provider failure is surfaced as retryable. | Working tree; unit green; CI + live provider check pending |
+| AC8 | tests/e2e/access-and-preview.spec.js | Anonymous preview browser tests run without a tenant database. | Preview remains fictional/read-only, clearly labeled, and its office filter remains independent of signed-in data services. | E2E 5/5 locally; CI pending |
 
 Do not mark complete based on a UI screenshot, a build alone, or mocked provider success alone.

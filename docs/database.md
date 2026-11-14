@@ -31,13 +31,13 @@ npm run test:db
 | --------------------- | ----------------------------------------------------------------------------------------------------------- |
 | `npm run db:generate` | Generate a versioned SQL migration after changing the JavaScript schema. Review the SQL before applying it. |
 | `npm run db:migrate`  | Apply pending migrations with Drizzle's migration journal. Re-running does not recreate tables.             |
-| `npm run db:check`    | Verify the application connection and all nine required tables.                                      |
+| `npm run db:check`    | Verify the application connection and all fifteen required tables.                                   |
 | `npm test`             | Run deterministic unit tests without a database.                                                     |
 | `npm run db:migrate:test` | Apply migrations only to `TEST_DATABASE_URL`.                                                     |
 | `npm run test:db`       | Verify database constraints using synthetic records in one rolled-back transaction on test DB.       |
 | `npm run test:e2e`      | Run browser acceptance tests against the production build.                                            |
 
-The PostgreSQL integration tests require a reachable test database migrated from scratch. They do not leave fixture records behind. They check real foreign keys, identity upserts, webhook event idempotency, and uniqueness constraints; they do not verify a real WorkOS sign-in or live webhook delivery.
+The PostgreSQL integration tests require a reachable test database migrated from scratch. They use synthetic fixtures inside rolled-back transactions, except for the independent-connection test which cleans up by fixture ID. They check foreign keys, identity upserts, webhook event idempotency, scope, stock reconciliation, audit history, and concurrency; they do not verify a real WorkOS sign-in or live webhook delivery.
 
 ## Foundation migration
 
@@ -51,7 +51,7 @@ The PostgreSQL integration tests require a reachable test database migrated from
 | `rooms`                    | Rooms belonging to an office, with unique codes per office and optional nonnegative capacity. |
 | `room_assignments`         | Employee assignments with start/end times and retained history.                               |
 
-Subsequent migrations add `processed_workos_events`, keyed by provider event ID, and immutable `audit_events` tied to the actor's tenant membership and office. The event table stores only type and timestamps, never webhook payloads; audit snapshots reject secrets and contact fields.
+Subsequent migrations add `processed_workos_events`, keyed by provider event ID; immutable `audit_events`; `inventory_items` and `stock_locations`; atomic stock transactions, balances, and immutable movements; and versioned room stock requirements. The event table stores only type and timestamps, never webhook payloads; audit snapshots reject secrets and contact fields.
 
 Composite foreign keys enforce matching organizations on office access and rooms. Room assignments reference both the employee's office access record and a room in that same office. A partial unique index permits one active assigned room per member per office, while allowing historical assignments and assignments in multiple offices.
 
@@ -61,13 +61,13 @@ Office access records are deactivated rather than deleted when history refers to
 
 WorkOS organization IDs and local organization UUIDs are different values. `requireOrganization()` validates the current WorkOS user, organization, and active membership, then returns both `workosOrganizationId` and the local `organizationId`. Business services must scope every read and write to the local UUID. Browser-supplied tenant IDs are not an access check.
 
-Foreign keys protect relationships; they do not authorize reads. There is no general public database endpoint. Row-level security policies and a restricted application database role are not configured in this foundation; tenant-scoped services and authorization checks must be implemented before exposing business data through application routes.
+Foreign keys protect relationships; they do not authorize reads. There is no general public database endpoint. Row-level security policies and separate restricted runtime/migration database roles are not configured yet. Tenant-scoped services and authorization checks protect current application reads; production role grants and any RLS decision remain release gates.
 
-WorkOS remains authoritative for staff access. The presence of a local membership row cannot independently authorize a request. A signed membership webhook receiver and idempotent current-state reconciliation are implemented; public endpoint delivery and staging credentials are not configured. Staff onboarding, organization switching, and office management UI remain in progress. The dashboard currently does not query or modify business records.
+WorkOS remains authoritative for staff access. The presence of a local membership row cannot independently authorize a request. A signed membership webhook receiver and idempotent current-state reconciliation are implemented; public endpoint delivery and staging credentials are not configured. Office, room, people, catalog, stock, and room-needs services are available to authorized users. The overview reads live office/room/assignment counts, shortages, and recent stock history within the verified scope.
 
 ## Further schema work
 
-Inventory balances and movements, room stock requirements, visitors, QR credentials, refreshment orders, and notifications will get their own reviewed migrations when those features are implemented. Attendance remains deferred.
+Visitor records, QR credentials, refreshment orders, and fulfillment notifications need reviewed migrations if those planned workflows enter scope. Attendance remains deferred.
 
 ## References
 

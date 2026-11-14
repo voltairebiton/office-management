@@ -117,6 +117,7 @@ test("C09 target lifecycle and room needs reconcile with stock, scope, filters, 
       assert.equal(tissueRow.status, "shortage");
       assert.equal(tissueRow.assignedHeadcount, 1);
       assert.equal(list.roomCountNeedingSupplies, 1);
+      assert.equal(list.roomCountNeedingSuppliesByOffice[fixture.office.id], 1);
       assert.deepEqual(list.shortagesByItem.map((row) => [row.itemId, row.shortage]), [[fixture.chairs.id, 2], [fixture.tissues.id, 2]]);
 
       await receiveStock(fixture.managerContext, {
@@ -150,7 +151,7 @@ test("C09 target lifecycle and room needs reconcile with stock, scope, filters, 
         officeId: fixture.otherOffice.id,
       }), transaction), { code: "NOT_FOUND" });
       await assert.rejects(setRoomRequirement(fixture.managerContext, requirement(fixture, {
-        expectedVersion: 4,
+        targetQuantity: 5, expectedVersion: 0,
       }), transaction), { code: "CONFLICT" });
       await assert.rejects(listRoomNeeds(fixture.managerContext, { officeId: fixture.otherOffice.id }, transaction), { code: "NOT_FOUND" });
 

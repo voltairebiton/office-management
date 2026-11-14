@@ -1,6 +1,6 @@
 # C00 — Test foundation and CI
 
-Status: In progress. Dependencies: None.
+Status: Complete. Dependencies: None.
 
 ## User outcome
 
@@ -37,11 +37,11 @@ No new business features. No production data resets. Do not make a percentage-co
 
 ## Completion record
 
-- [ ] Acceptance tests written first; meaningful red failures recorded.
-- [ ] Test database isolation and guard complete.
-- [ ] Unit, integration and E2E suites run in the documented order.
-- [ ] CI run is green.
-- [ ] Documentation and setup instructions updated; test output contains no credentials.
+- [x] Acceptance tests written first; meaningful red failures recorded.
+- [x] Test database isolation and guard complete.
+- [x] Unit, integration and E2E suites run in the documented order.
+- [x] CI run is green.
+- [x] Documentation and setup instructions updated; test output contains no credentials.
 
 | Criterion | Test/check path | Red failure or live-check prerequisite | Green result | Commit/evidence |
 | --- | --- | --- | --- | --- |

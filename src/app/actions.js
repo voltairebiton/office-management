@@ -33,6 +33,8 @@ import { receiveStock } from "@/lib/stock-service";
 import { transferStock } from "@/lib/transfer-service";
 import { adjustStock as recordStockAdjustment } from "@/lib/adjustment-service";
 import { removeRoomRequirement, setRoomRequirement } from "@/lib/room-requirement-service";
+import { getWorkOSIdentityProvider } from "@/lib/workos-client";
+import { renameWorkspace } from "@/lib/workspace-settings-service";
 
 function value(formData, field) {
   const entry = formData.get(field);
@@ -118,6 +120,21 @@ async function submitRoom(formData, operation) {
 export async function signOutAction() {
   if (!getAuthConfiguration().ready) redirect("/");
   await signOut();
+}
+
+export async function saveWorkspaceNameAction(previousState, formData) {
+  const { authorization, workosOrganizationId } = await requireOrganization();
+  try {
+    const organization = await renameWorkspace(authorization, {
+      workosOrganizationId,
+      name: value(formData, "name"),
+      expectedName: value(formData, "expectedName"),
+    }, getWorkOSIdentityProvider());
+    revalidatePath("/dashboard");
+    return { ok: true, message: `Workspace name saved as ${organization.name}.` };
+  } catch (error) {
+    return actionError(error);
+  }
 }
 
 export async function saveOfficeAction(previousState, formData) {
