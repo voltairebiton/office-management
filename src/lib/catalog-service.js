@@ -1,7 +1,7 @@
 import "server-only";
-import { and, asc, count, eq, ilike, inArray, or } from "drizzle-orm";
+import { and, asc, count, eq, gt, ilike, inArray, or } from "drizzle-orm";
 import { getDatabase } from "../db/index.js";
-import { inventoryItems, offices, rooms, stockLocations } from "../db/schema.js";
+import { inventoryItems, offices, rooms, stockBalances, stockLocations, stockMovements } from "../db/schema.js";
 import { recordAuditEvent } from "./audit-repository.js";
 import { assertCapability } from "./authorization.js";
 import { normalizeCatalogItemInput, normalizeStorageLocationInput } from "./catalog-validation.js";
@@ -184,6 +184,17 @@ export async function updateCatalogItem(context, itemId, input, expectedUpdatedA
       if (item.updatedAt.getTime() !== expected) {
         throw catalogError("CONFLICT", "This catalog item changed. Reload before saving.");
       }
+      const identityChanged = item.sku !== values.sku || item.category !== values.category || item.unit !== values.unit;
+      if (identityChanged) {
+        const [history] = await transaction.select({ total: count() }).from(stockMovements)
+          .where(and(
+            eq(stockMovements.organizationId, context.organizationId),
+            eq(stockMovements.itemId, item.id),
+          ));
+        if (Number(history?.total ?? 0) > 0) {
+          throw catalogError("CONFLICT", "SKU, category, and base unit are locked after the first stock movement.");
+        }
+      }
       const [updated] = await transaction.update(inventoryItems)
         .set({ ...values, updatedAt: new Date(Math.max(Date.now(), item.updatedAt.getTime() + 1)) })
         .where(and(eq(inventoryItems.organizationId, context.organizationId), eq(inventoryItems.id, itemId)))
@@ -208,6 +219,17 @@ export async function archiveItem(context, itemId, database = getDatabase()) {
   return database.transaction(async (transaction) => {
     const item = await lockItem(transaction, context, itemId);
     if (!item.isActive) return item;
+    const [balances] = await transaction.select({ total: count() }).from(stockBalances)
+      .where(and(
+        eq(stockBalances.organizationId, context.organizationId),
+        eq(stockBalances.itemId, item.id),
+        gt(stockBalances.quantity, 0),
+      ));
+    if (Number(balances?.total ?? 0) > 0) {
+      throw catalogError("CONFLICT", "Move or reconcile stock before archiving this catalog item.", {
+        dependents: { locationsWithStock: Number(balances.total) },
+      });
+    }
     const [archived] = await transaction.update(inventoryItems)
       .set({ isActive: false, updatedAt: new Date() })
       .where(and(eq(inventoryItems.organizationId, context.organizationId), eq(inventoryItems.id, itemId)))
@@ -399,6 +421,18 @@ export async function archiveLocation(context, officeId, locationId, database = 
     await lockActiveOffice(transaction, context, officeId);
     const location = await lockLocation(transaction, context, officeId, locationId);
     if (!location.isActive) return location;
+    const [balances] = await transaction.select({ total: count() }).from(stockBalances)
+      .where(and(
+        eq(stockBalances.organizationId, context.organizationId),
+        eq(stockBalances.officeId, officeId),
+        eq(stockBalances.locationId, location.id),
+        gt(stockBalances.quantity, 0),
+      ));
+    if (Number(balances?.total ?? 0) > 0) {
+      throw catalogError("CONFLICT", "Move or reconcile stock before archiving this location.", {
+        dependents: { itemsWithStock: Number(balances.total) },
+      });
+    }
     const [archived] = await transaction.update(stockLocations)
       .set({ isActive: false, updatedAt: new Date() })
       .where(and(

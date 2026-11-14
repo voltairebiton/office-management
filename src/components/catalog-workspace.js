@@ -1,14 +1,17 @@
+import { randomUUID } from "node:crypto";
 import Link from "next/link";
 import {
   ArchiveCatalogItemForm,
   ArchiveStockLocationForm,
   CatalogItemForm,
   EnsureRoomLocationForm,
+  ReceiveStockForm,
   StorageLocationForm,
 } from "@/components/catalog-forms";
 import { hasCapability } from "@/lib/authorization";
 import { getOffice, listOffices, listRooms } from "@/lib/office-service";
 import { listCatalogItems, listStockLocations } from "@/lib/catalog-service";
+import { listStockBalances, listStockMovements } from "@/lib/stock-service";
 
 function workspaceUrl(values = {}) {
   const query = new URLSearchParams({ view: "inventory" });
@@ -24,6 +27,40 @@ function ErrorPanel({ message = "Refresh the page and try again." }) {
 
 function EmptyPanel({ title, message }) {
   return <div className="om-empty"><strong>{title}</strong><p>{message}</p></div>;
+}
+
+function StockBalances({ result, officeId }) {
+  return <>
+    {result.rows.length ? <div className="pm-stock-table-wrap"><table className="pm-stock-table">
+      <caption className="ws-sr-only">Stock balances by item and location</caption>
+      <thead><tr><th>Item</th><th>Location</th><th>On hand</th><th>Type</th></tr></thead>
+      <tbody>{result.rows.map((row) => <tr key={row.id}>
+        <td><strong>{row.itemName}</strong><small>{row.itemSku} · {row.itemCategory}</small></td>
+        <td>{row.locationKind === "room" ? row.roomName ?? row.locationName : row.locationName}<small>{row.locationCode}</small></td>
+        <td><strong>{row.quantity}</strong><small>{row.unit}</small></td>
+        <td>{row.locationKind === "room" ? "Room" : "Storage"}</td>
+      </tr>)}</tbody>
+    </table></div> : <EmptyPanel title="No stock on hand yet" message="Record an opening receipt or replenish an office storeroom to establish the first balance." />}
+    <Pagination result={result} query={{ office: officeId }} pageKey="balancePage" label="Stock balances" />
+  </>;
+}
+
+function StockMovements({ result, officeId, timezone = "UTC" }) {
+  const formatDate = (value) => new Intl.DateTimeFormat("en", { dateStyle: "medium", timeStyle: "short", timeZone: timezone }).format(value);
+  return <>
+    {result.rows.length ? <div className="pm-stock-table-wrap"><table className="pm-stock-table">
+      <caption className="ws-sr-only">Recent stock movements</caption>
+      <thead><tr><th>When</th><th>Movement</th><th>Item / location</th><th>Change</th><th>Reason / reference</th></tr></thead>
+      <tbody>{result.rows.map((row) => <tr key={row.id}>
+        <td>{formatDate(row.createdAt)}</td>
+        <td>{row.movementType.replaceAll("_", " ")}</td>
+        <td><strong>{row.itemName}</strong><small>{row.itemSku} · {row.locationCode}</small></td>
+        <td className={row.quantityDelta > 0 ? "pm-stock-positive" : "pm-stock-negative"}>{row.quantityDelta > 0 ? "+" : ""}{row.quantityDelta} {row.itemUnit}<small>Balance {row.balanceAfter}</small></td>
+        <td>{row.reason}{row.reference && <small>{row.reference}</small>}</td>
+      </tr>)}</tbody>
+    </table></div> : <EmptyPanel title="No stock movements yet" message="Every receipt, deployment, return, and correction will leave a permanent record here." />}
+    <Pagination result={result} query={{ office: officeId }} pageKey="movementPage" label="Stock movements" />
+  </>;
 }
 
 function Pagination({ result, query, label, pageKey = "page" }) {
@@ -119,9 +156,13 @@ export async function CatalogWorkspace({ context, searchParams = {} }) {
   let locations = { rows: [], total: 0, page: 1, totalPages: 0 };
   let roomLocations = { rows: [] };
   let rooms = { rows: [], total: 0 };
+  let balances = { rows: [], total: 0, page: 1, pageSize: 20, totalPages: 0 };
+  let movements = { rows: [], total: 0, page: 1, pageSize: 20, totalPages: 0 };
+  let receiptItems = { rows: [], total: 0 };
+  let receiptLocations = { rows: [], total: 0 };
   if (officeId) {
     try {
-      [locations, rooms] = await Promise.all([
+      [locations, rooms, balances, movements, receiptItems, receiptLocations] = await Promise.all([
         listStockLocations(context, officeId, {
           q: searchParams.locQ ?? "",
           status: searchParams.locStatus ?? "active",
@@ -129,6 +170,10 @@ export async function CatalogWorkspace({ context, searchParams = {} }) {
           pageSize: 20,
         }),
         listRooms(context, officeId, { status: "active", page: 1, pageSize: 50 }),
+        listStockBalances(context, officeId, { page: searchParams.balancePage ?? 1, pageSize: 20 }),
+        listStockMovements(context, officeId, { page: searchParams.movementPage ?? 1, pageSize: 20 }),
+        listCatalogItems(context, { status: "active", page: 1, pageSize: 50 }),
+        listStockLocations(context, officeId, { status: "active", kind: "storage", page: 1, pageSize: 50 }),
       ]);
       roomLocations = await listStockLocations(context, officeId, {
         status: "all",
@@ -149,6 +194,23 @@ export async function CatalogWorkspace({ context, searchParams = {} }) {
       <div><p className="om-eyebrow">CATALOG & STORAGE</p><h2>Inventory setup</h2><p>Maintain shared item definitions and prepare the locations where office stock will live.</p></div>
     </div>
     {!canManageCatalog && <div className="ws-foundation-notice pm-info-notice"><div><strong>Shared catalog</strong><p>You can select active tenant items for your assigned offices. Only organization administrators can change the shared item definitions.</p></div></div>}
+
+    {office && <section className="om-subpanel">
+      <div className="om-subpanel-heading"><div><h3>Receive stock</h3><p>Record opening stock or replenishment into an active storeroom or pantry. Receipts are saved once and added to the permanent movement history.</p></div></div>
+      {canManageLocations ? <ReceiveStockForm key={officeId} officeId={officeId} locations={receiptLocations.rows} items={receiptItems.rows} initialRequestKey={randomUUID()} />
+        : <EmptyPanel title="Receipt access required" message="Your role can view stock but cannot record receipts." />}
+      {(receiptItems.total > receiptItems.rows.length || receiptLocations.total > receiptLocations.rows.length) && <p className="pm-muted pm-selector-note">The receipt selectors show the first 50 active items and storage locations.</p>}
+    </section>}
+
+    {office && <section className="om-subpanel">
+      <div className="om-subpanel-heading"><div><h3>On-hand stock</h3><p>{balances.total} item-location {balances.total === 1 ? "balance" : "balances"} at {office.name}.</p></div></div>
+      <div className="pm-catalog-body"><StockBalances result={balances} officeId={officeId} /></div>
+    </section>}
+
+    {office && <section className="om-subpanel">
+      <div className="om-subpanel-heading"><div><h3>Movement history</h3><p>Immutable record of receipts and every later stock movement at {office.name}.</p></div></div>
+      <div className="pm-catalog-body"><StockMovements result={movements} officeId={officeId} timezone={office.timezone} /></div>
+    </section>}
 
     <section className="om-subpanel">
       <div className="om-subpanel-heading"><div><h3>Shared item catalog</h3><p>Whole base units only. No conversions or stock quantities are stored here.</p></div></div>

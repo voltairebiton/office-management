@@ -42,6 +42,25 @@ export const stockLocationKind = pgEnum("stock_location_kind", [
   "room",
 ]);
 
+export const stockTransactionOperation = pgEnum("stock_transaction_operation", [
+  "receipt",
+  "transfer",
+  "consumption",
+  "damage",
+  "count_correction",
+]);
+
+export const stockMovementType = pgEnum("stock_movement_type", [
+  "receipt",
+  "deployment",
+  "return",
+  "transfer_out",
+  "transfer_in",
+  "consumption",
+  "damage",
+  "count_correction",
+]);
+
 export const users = pgTable("users", {
   id: primaryId(),
   workosUserId: text("workos_user_id").notNull().unique(),
@@ -351,5 +370,123 @@ export const stockLocations = pgTable(
     check("stock_locations_name_not_empty", sql`length(btrim(${table.name})) > 0`),
     check("stock_locations_name_max_length", sql`length(${table.name}) <= 120`),
     check("stock_locations_kind_room_consistency", sql`(${table.kind} = 'room' and ${table.roomId} is not null) or (${table.kind} = 'storage' and ${table.roomId} is null)`),
+  ],
+);
+
+export const stockTransactions = pgTable(
+  "stock_transactions",
+  {
+    id: primaryId(),
+    organizationId: uuid("organization_id").notNull(),
+    actorUserId: uuid("actor_user_id").notNull(),
+    actorMembershipId: uuid("actor_membership_id").notNull(),
+    operation: stockTransactionOperation("operation").notNull(),
+    requestKey: uuid("request_key").notNull(),
+    payloadHash: text("payload_hash").notNull(),
+    reason: text("reason").notNull(),
+    reference: text("reference"),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    unique("stock_transactions_organization_id_key").on(table.organizationId, table.id),
+    unique("stock_transactions_request_key_key").on(table.organizationId, table.operation, table.requestKey),
+    foreignKey({
+      name: "stock_transactions_actor_membership_fk",
+      columns: [table.organizationId, table.actorUserId, table.actorMembershipId],
+      foreignColumns: [organizationMemberships.organizationId, organizationMemberships.userId, organizationMemberships.id],
+    }),
+    check("stock_transactions_payload_hash_format", sql`${table.payloadHash} ~ '^[a-f0-9]{64}$'`),
+    check("stock_transactions_reason_not_empty", sql`length(btrim(${table.reason})) > 0`),
+    check("stock_transactions_reference_max_length", sql`${table.reference} is null or length(${table.reference}) <= 120`),
+  ],
+);
+
+export const stockBalances = pgTable(
+  "stock_balances",
+  {
+    id: primaryId(),
+    organizationId: uuid("organization_id").notNull(),
+    officeId: uuid("office_id").notNull(),
+    locationId: uuid("location_id").notNull(),
+    itemId: uuid("item_id").notNull(),
+    quantity: integer("quantity").default(0).notNull(),
+    version: integer("version").default(0).notNull(),
+    ...timestamps(),
+  },
+  (table) => [
+    unique("stock_balances_organization_id_key").on(table.organizationId, table.id),
+    unique("stock_balances_location_item_key").on(table.organizationId, table.officeId, table.locationId, table.itemId),
+    foreignKey({
+      name: "stock_balances_location_fk",
+      columns: [table.organizationId, table.officeId, table.locationId],
+      foreignColumns: [stockLocations.organizationId, stockLocations.officeId, stockLocations.id],
+    }),
+    foreignKey({
+      name: "stock_balances_item_fk",
+      columns: [table.organizationId, table.itemId],
+      foreignColumns: [inventoryItems.organizationId, inventoryItems.id],
+    }),
+    check("stock_balances_quantity_nonnegative", sql`${table.quantity} >= 0`),
+    check("stock_balances_version_nonnegative", sql`${table.version} >= 0`),
+    index("stock_balances_office_location_idx").on(table.organizationId, table.officeId, table.locationId),
+  ],
+);
+
+export const stockMovements = pgTable(
+  "stock_movements",
+  {
+    id: primaryId(),
+    organizationId: uuid("organization_id").notNull(),
+    officeId: uuid("office_id").notNull(),
+    transactionId: uuid("transaction_id").notNull(),
+    actorUserId: uuid("actor_user_id").notNull(),
+    actorMembershipId: uuid("actor_membership_id").notNull(),
+    locationId: uuid("location_id").notNull(),
+    itemId: uuid("item_id").notNull(),
+    movementType: stockMovementType("movement_type").notNull(),
+    quantityDelta: integer("quantity_delta").notNull(),
+    balanceAfter: integer("balance_after").notNull(),
+    itemSku: text("item_sku").notNull(),
+    itemName: text("item_name").notNull(),
+    itemCategory: inventoryItemCategory("item_category").notNull(),
+    itemUnit: text("item_unit").notNull(),
+    reason: text("reason").notNull(),
+    reference: text("reference"),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    unique("stock_movements_transaction_id_key").on(table.organizationId, table.id),
+    foreignKey({
+      name: "stock_movements_transaction_fk",
+      columns: [table.organizationId, table.transactionId],
+      foreignColumns: [stockTransactions.organizationId, stockTransactions.id],
+    }),
+    foreignKey({
+      name: "stock_movements_actor_membership_fk",
+      columns: [table.organizationId, table.actorUserId, table.actorMembershipId],
+      foreignColumns: [organizationMemberships.organizationId, organizationMemberships.userId, organizationMemberships.id],
+    }),
+    foreignKey({
+      name: "stock_movements_location_fk",
+      columns: [table.organizationId, table.officeId, table.locationId],
+      foreignColumns: [stockLocations.organizationId, stockLocations.officeId, stockLocations.id],
+    }),
+    foreignKey({
+      name: "stock_movements_item_fk",
+      columns: [table.organizationId, table.itemId],
+      foreignColumns: [inventoryItems.organizationId, inventoryItems.id],
+    }),
+    check("stock_movements_quantity_delta_nonzero", sql`${table.quantityDelta} <> 0`),
+    check("stock_movements_receipt_positive", sql`${table.movementType} <> 'receipt' or ${table.quantityDelta} > 0`),
+    check("stock_movements_transfer_out_negative", sql`${table.movementType} <> 'transfer_out' or ${table.quantityDelta} < 0`),
+    check("stock_movements_transfer_in_positive", sql`${table.movementType} <> 'transfer_in' or ${table.quantityDelta} > 0`),
+    check("stock_movements_balance_nonnegative", sql`${table.balanceAfter} >= 0`),
+    check("stock_movements_item_sku_format", sql`${table.itemSku} ~ '^[A-Z0-9][A-Z0-9_-]{0,31}$'`),
+    check("stock_movements_item_name_not_empty", sql`length(btrim(${table.itemName})) > 0`),
+    check("stock_movements_item_unit_format", sql`${table.itemUnit} ~ '^[a-z][a-z0-9_-]{0,23}$'`),
+    check("stock_movements_reason_not_empty", sql`length(btrim(${table.reason})) > 0`),
+    check("stock_movements_reference_max_length", sql`${table.reference} is null or length(${table.reference}) <= 120`),
+    index("stock_movements_office_created_idx").on(table.organizationId, table.officeId, table.createdAt.desc()),
+    index("stock_movements_item_created_idx").on(table.organizationId, table.itemId, table.createdAt.desc()),
   ],
 );

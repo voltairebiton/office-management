@@ -1,5 +1,6 @@
 "use server";
 
+import { randomUUID } from "node:crypto";
 import { signOut } from "@workos-inc/authkit-nextjs";
 import { redirect } from "next/navigation";
 import { getAuthConfiguration } from "@/lib/auth-config";
@@ -28,6 +29,7 @@ import {
   updateCatalogItem,
   updateStorageLocation,
 } from "@/lib/catalog-service";
+import { receiveStock } from "@/lib/stock-service";
 
 function value(formData, field) {
   const entry = formData.get(field);
@@ -280,6 +282,31 @@ export async function ensureRoomStockLocationAction(previousState, formData) {
     );
     revalidatePath("/dashboard");
     return { ok: true, message: "Room stock location is ready." };
+  } catch (error) {
+    return actionError(error);
+  }
+}
+
+export async function receiveStockAction(previousState, formData) {
+  const { authorization } = await requireOrganization();
+  try {
+    const result = await receiveStock(authorization, {
+      officeId: value(formData, "officeId"),
+      locationId: value(formData, "locationId"),
+      itemId: value(formData, "itemId"),
+      requestKey: value(formData, "requestKey"),
+      quantity: value(formData, "quantity"),
+      reason: value(formData, "reason"),
+      reference: value(formData, "reference"),
+    });
+    revalidatePath("/dashboard");
+    return {
+      ok: true,
+      message: `${result.movement.quantityDelta} ${result.movement.itemUnit} of ${result.movement.itemName} received. Balance: ${result.balanceAfter}.`,
+      transactionId: result.transactionId,
+      movementId: result.movement.id,
+      nextRequestKey: randomUUID(),
+    };
   } catch (error) {
     return actionError(error);
   }

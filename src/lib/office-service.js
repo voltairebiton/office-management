@@ -1,7 +1,7 @@
 import "server-only";
-import { and, asc, count, eq, ilike, inArray, or, sql } from "drizzle-orm";
+import { and, asc, count, eq, gt, ilike, inArray, or, sql } from "drizzle-orm";
 import { getDatabase } from "../db/index.js";
-import { officeAssignments, offices, roomAssignments, rooms } from "../db/schema.js";
+import { officeAssignments, offices, roomAssignments, rooms, stockBalances, stockLocations } from "../db/schema.js";
 import { recordAuditEvent } from "./audit-repository.js";
 import { assertCapability } from "./authorization.js";
 import { normalizeOfficeInput, normalizeRoomInput, parseListOptions } from "./office-validation.js";
@@ -207,6 +207,17 @@ export async function archiveOffice(context, officeId, database = getDatabase())
         dependents: { activeRooms: Number(activeRooms[0].total) },
       });
     }
+    const [stockBalancesCount] = await transaction.select({ total: count() }).from(stockBalances)
+      .where(and(
+        eq(stockBalances.organizationId, context.organizationId),
+        eq(stockBalances.officeId, officeId),
+        gt(stockBalances.quantity, 0),
+      ));
+    if (Number(stockBalancesCount?.total ?? 0) > 0) {
+      throw serviceError("CONFLICT", "Move or reconcile stock before archiving this office.", {
+        dependents: { stockLocationBalances: Number(stockBalancesCount.total) },
+      });
+    }
     const [archived] = await transaction.update(offices)
       .set({ isActive: false })
       .where(and(eq(offices.organizationId, context.organizationId), eq(offices.id, officeId), eq(offices.isActive, true)))
@@ -339,6 +350,23 @@ export async function archiveRoom(context, officeId, roomId, database = getDatab
     if (Number(activeAssignments[0]?.total ?? 0) > 0) {
       throw serviceError("CONFLICT", "Move active room assignments before archiving this room.", {
         dependents: { activeRoomAssignments: Number(activeAssignments[0].total) },
+      });
+    }
+    const [stockBalancesCount] = await transaction.select({ total: count() }).from(stockBalances)
+      .innerJoin(stockLocations, and(
+        eq(stockLocations.organizationId, stockBalances.organizationId),
+        eq(stockLocations.officeId, stockBalances.officeId),
+        eq(stockLocations.id, stockBalances.locationId),
+      ))
+      .where(and(
+        eq(stockBalances.organizationId, context.organizationId),
+        eq(stockBalances.officeId, officeId),
+        eq(stockLocations.roomId, roomId),
+        gt(stockBalances.quantity, 0),
+      ));
+    if (Number(stockBalancesCount?.total ?? 0) > 0) {
+      throw serviceError("CONFLICT", "Move or reconcile room stock before archiving this room.", {
+        dependents: { stockLocationBalances: Number(stockBalancesCount.total) },
       });
     }
     const [archived] = await transaction.update(rooms)
