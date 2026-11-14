@@ -373,6 +373,43 @@ export const stockLocations = pgTable(
   ],
 );
 
+export const roomStockRequirements = pgTable(
+  "room_stock_requirements",
+  {
+    id: primaryId(),
+    organizationId: uuid("organization_id").notNull(),
+    officeId: uuid("office_id").notNull(),
+    roomId: uuid("room_id").notNull(),
+    itemId: uuid("item_id").notNull(),
+    targetQuantity: integer("target_quantity").notNull(),
+    version: integer("version").default(1).notNull(),
+    isActive: boolean("is_active").default(true).notNull(),
+    ...timestamps(),
+  },
+  (table) => [
+    unique("room_stock_requirements_id_key").on(table.organizationId, table.id),
+    unique("room_stock_requirements_room_item_key").on(
+      table.organizationId,
+      table.officeId,
+      table.roomId,
+      table.itemId,
+    ),
+    foreignKey({
+      name: "room_stock_requirements_room_fk",
+      columns: [table.organizationId, table.officeId, table.roomId],
+      foreignColumns: [rooms.organizationId, rooms.officeId, rooms.id],
+    }),
+    foreignKey({
+      name: "room_stock_requirements_item_fk",
+      columns: [table.organizationId, table.itemId],
+      foreignColumns: [inventoryItems.organizationId, inventoryItems.id],
+    }),
+    check("room_stock_requirements_target_nonnegative", sql.raw("target_quantity >= 0")),
+    check("room_stock_requirements_version_positive", sql.raw("version >= 1")),
+    index("room_stock_requirements_office_active_idx").on(table.organizationId, table.officeId, table.isActive),
+  ],
+);
+
 export const stockTransactions = pgTable(
   "stock_transactions",
   {

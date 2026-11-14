@@ -32,6 +32,7 @@ import {
 import { receiveStock } from "@/lib/stock-service";
 import { transferStock } from "@/lib/transfer-service";
 import { adjustStock as recordStockAdjustment } from "@/lib/adjustment-service";
+import { removeRoomRequirement, setRoomRequirement } from "@/lib/room-requirement-service";
 
 function value(formData, field) {
   const entry = formData.get(field);
@@ -368,6 +369,38 @@ export async function adjustStockAction(previousState, formData) {
       transactionId: result.transactionId,
       nextRequestKey: randomUUID(),
     };
+  } catch (error) {
+    return actionError(error);
+  }
+}
+
+export async function saveRoomRequirementAction(previousState, formData) {
+  const { authorization } = await requireOrganization();
+  try {
+    const requirement = await setRoomRequirement(authorization, {
+      officeId: value(formData, "officeId"),
+      roomId: value(formData, "roomId"),
+      itemId: value(formData, "itemId"),
+      targetQuantity: value(formData, "targetQuantity"),
+      expectedVersion: value(formData, "expectedVersion"),
+    });
+    revalidatePath("/dashboard");
+    return { ok: true, message: "Target saved: " + requirement.targetQuantity + ".", requirementId: requirement.id };
+  } catch (error) {
+    return actionError(error);
+  }
+}
+
+export async function removeRoomRequirementAction(previousState, formData) {
+  const { authorization } = await requireOrganization();
+  try {
+    await removeRoomRequirement(authorization, {
+      officeId: value(formData, "officeId"),
+      requirementId: value(formData, "requirementId"),
+      expectedVersion: value(formData, "expectedVersion"),
+    });
+    revalidatePath("/dashboard");
+    return { ok: true, message: "Room target removed. Existing stock remains on hand." };
   } catch (error) {
     return actionError(error);
   }

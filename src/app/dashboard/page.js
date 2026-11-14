@@ -5,6 +5,7 @@ import { resolveView } from "@/lib/workspace-navigation";
 import { OfficeWorkspace } from "@/components/office-workspace";
 import { PeopleWorkspace } from "@/components/people-workspace";
 import { CatalogWorkspace } from "@/components/catalog-workspace";
+import { RoomNeedsWorkspace } from "@/components/room-needs-workspace";
 
 export const metadata = { title: "Workspace" };
 
@@ -21,5 +22,8 @@ export default async function DashboardPage({ searchParams }) {
   const inventoryContent = view === "inventory"
     ? <CatalogWorkspace context={authorization} searchParams={params} />
     : null;
-  return <WorkspaceDashboard view={view} officeContent={officeContent} peopleContent={peopleContent} inventoryContent={inventoryContent} account={{ name: [user.firstName, user.lastName].filter(Boolean).join(" ") || "Team member", email: user.email, role: role || "Member" }} signOutAction={signOutAction} />;
+  const requirementContent = view === "requirements"
+    ? <RoomNeedsWorkspace context={authorization} searchParams={params} />
+    : null;
+  return <WorkspaceDashboard view={view} officeContent={officeContent} peopleContent={peopleContent} inventoryContent={inventoryContent} requirementContent={requirementContent} account={{ name: [user.firstName, user.lastName].filter(Boolean).join(" ") || "Team member", email: user.email, role: role || "Member" }} signOutAction={signOutAction} />;
 }

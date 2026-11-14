@@ -322,6 +322,7 @@ export async function listStockMovements(context, officeId, input = {}, database
       id: stockMovements.id,
       transactionId: stockMovements.transactionId,
       movementType: stockMovements.movementType,
+      reversalOfMovementId: stockMovements.reversalOfMovementId,
       quantityDelta: stockMovements.quantityDelta,
       balanceAfter: stockMovements.balanceAfter,
       itemId: stockMovements.itemId,

@@ -229,7 +229,7 @@ function transferLocations(intent, direction, locations, excludeId = "") {
   return locations.filter((location) => (!kind || location.kind === kind) && location.id !== excludeId);
 }
 
-export function TransferStockForm({ officeId, locations, items, initialRequestKey }) {
+export function TransferStockForm({ officeId, locations, items, initialRequestKey, initialValues = null }) {
   const [state, formAction, pending] = useActionState(transferStockAction, initialState);
   const [manualRequestKey, setManualRequestKey] = useState(null);
   const [manualDraft, setManualDraft] = useState(null);
@@ -246,12 +246,14 @@ export function TransferStockForm({ officeId, locations, items, initialRequestKe
   const defaultSources = transferLocations(initialIntent, "source", locations);
   const defaultDestinations = transferLocations(initialIntent, "destination", locations, defaultSources[0]?.id ?? "");
   const defaultDraft = {
-    itemId: items[0]?.id ?? "",
-    sourceLocationId: defaultSources[0]?.id ?? "",
-    destinationLocationId: defaultDestinations[0]?.id ?? "",
-    quantity: "1",
-    intent: initialIntent,
-    reference: "",
+    itemId: items.some((item) => item.id === initialValues?.itemId) ? initialValues.itemId : items[0]?.id ?? "",
+    sourceLocationId: defaultSources.some((location) => location.id === initialValues?.sourceLocationId)
+      ? initialValues.sourceLocationId : defaultSources[0]?.id ?? "",
+    destinationLocationId: defaultDestinations.some((location) => location.id === initialValues?.destinationLocationId)
+      ? initialValues.destinationLocationId : defaultDestinations[0]?.id ?? "",
+    quantity: /^[1-9]\d*$/.test(String(initialValues?.quantity ?? "")) ? String(initialValues.quantity) : "1",
+    intent: initialValues?.intent === "deployment" ? "deployment" : initialIntent,
+    reference: initialValues?.reference ?? "",
   };
   const draft = manualDraft ?? (savedDraft ? {
     sourceLocationId: savedDraft.sourceLocationId,

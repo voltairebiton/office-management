@@ -18,7 +18,7 @@ This follows the previously agreed minimum. Visitor management, QR refreshment o
 | WorkOS configuration | Office Management staging app has localhost:3107 callback and sign-out URLs; client ID, cookie secret, and callback configured; server API key and webhook secret still missing |
 | Database | Dedicated Neon project; Drizzle migrations for identity, offices/rooms/assignments, idempotent WorkOS webhook IDs, and immutable audit history |
 | Integrity tests | Fresh PostgreSQL migrations and identity, authorization, audit, office/room, and multi-connection suites pass in CI. C04 services and the separate-connection assignment race are now included in the pipeline. |
-| Operational features | C01 identity projection and C02 tenant/office authorization are implemented; live WorkOS acceptance remains. C03 office/room CRUD is PostgreSQL verified; its authenticated browser journey remains. C04 people, office access, and room assignments pass PostgreSQL history, scope, and concurrency checks. C05 catalog and stock locations pass PostgreSQL acceptance. C06–C07 ledger receipts, deployments, and returns pass PostgreSQL CI acceptance. C08 corrections are implemented locally; the new PostgreSQL suite awaits CI. Live authenticated browser journeys remain. |
+| Operational features | C01 identity projection and C02 tenant/office authorization are implemented; live WorkOS acceptance remains. C03 office/room CRUD is PostgreSQL verified; its authenticated browser journey remains. C04 people, office access, and room assignments pass PostgreSQL history, scope, and concurrency checks. C05 catalog and stock locations pass PostgreSQL acceptance. C06–C07 ledger receipts, deployments, and returns pass PostgreSQL CI acceptance. C08 corrections are implemented; CI found a missing history projection that is fixed locally and awaits rerun. C09 target/shortage work is underway. Live authenticated browser journeys remain. |
 | Automation | C00 local unit/lint/build/E2E gates and fresh-PostgreSQL CI pass. Latest green baseline: [CI run 43616928534](https://github.com/voltairebiton/office-management/actions/runs/43616928534). Local database integration requires an isolated `TEST_DATABASE_URL`, which is not configured on this machine. |
 
 The public preview is never an authenticated acceptance environment. A successful build does not establish tenant isolation or complete sign-in. Existing work was not documented as test-first; TDD evidence starts with the contracts below.
@@ -50,8 +50,8 @@ Contract status reflects the evidence recorded below. “Implemented” does not
 | [C05](contracts/C05-catalog-locations.md) | Item catalog and stock locations | C02, C03 | PostgreSQL acceptance passes; authenticated browser validation remains |
 | [C06](contracts/C06-ledger-receipts.md) | Atomic ledger, balances, stock receipts | C05 | Ledger and database acceptance pass; authenticated WorkOS receipt journey remains |
 | [C07](contracts/C07-transfers.md) | Room deployment and returns | C06 | Transfer and database acceptance pass; authenticated WorkOS movement journey remains |
-| [C08](contracts/C08-stock-corrections.md) | Consumption, damage, and counted-stock corrections | C06 | Implementation and local checks pass; PostgreSQL CI pending |
-| [C09](contracts/C09-room-requirements.md) | Room inventory targets and shortages | C04, C07, C08 | Open |
+| [C08](contracts/C08-stock-corrections.md) | Consumption, damage, and counted-stock corrections | C06 | Implementation and local checks pass; PostgreSQL rerun pending |
+| [C09](contracts/C09-room-requirements.md) | Room inventory targets and shortages | C04, C07, C08 | Implementation underway; PostgreSQL CI pending |
 | [C10](contracts/C10-live-dashboard.md) | Real dashboard and complete staff UI integration | C03–C09 | Open; preview design exists |
 | [C11](contracts/C11-release.md) | Complete journeys, deployment, operational readiness | C00–C10 | Open |
 

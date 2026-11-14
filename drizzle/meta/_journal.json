@@ -64,6 +64,13 @@
       "when": 1794677872862,
       "tag": "0008_stock_adjustment_snapshots",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1794678605038,
+      "tag": "0009_room_stock_requirements",
+      "breakpoints": true
     }
   ]
 }

@@ -164,6 +164,8 @@ export async function CatalogWorkspace({ context, searchParams = {} }) {
   let receiptItems = { rows: [], total: 0 };
   let receiptLocations = { rows: [], total: 0 };
   let transferLocations = { rows: [], total: 0 };
+  let prefillRoomLocation = null;
+  let prefillItemId = "";
   if (officeId) {
     try {
       [locations, rooms, balances, adjustmentBalances, movements, receiptItems, receiptLocations, transferLocations] = await Promise.all([
@@ -188,6 +190,37 @@ export async function CatalogWorkspace({ context, searchParams = {} }) {
         page: 1,
         pageSize: 50,
       });
+      const movementRoomId = typeof searchParams.moveRoomId === "string" && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(searchParams.moveRoomId)
+        ? searchParams.moveRoomId
+        : "";
+      if (searchParams.moveIntent === "deployment" && movementRoomId) {
+        const requestedRoomLocations = await listStockLocations(context, officeId, {
+          status: "active",
+          kind: "room",
+          roomIds: [movementRoomId],
+          page: 1,
+          pageSize: 1,
+        });
+        prefillRoomLocation = requestedRoomLocations.rows[0] ?? null;
+        if (prefillRoomLocation && !transferLocations.rows.some((location) => location.id === prefillRoomLocation.id)) {
+          transferLocations = { ...transferLocations, rows: [...transferLocations.rows, prefillRoomLocation] };
+        }
+        const movementItemId = typeof searchParams.moveItemId === "string" && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(searchParams.moveItemId)
+          ? searchParams.moveItemId
+          : "";
+        if (movementItemId) {
+          prefillItemId = receiptItems.rows.find((item) => item.id === movementItemId)?.id ?? "";
+          if (!prefillItemId && typeof searchParams.moveItemSku === "string"
+            && /^[A-Z0-9][A-Z0-9_-]{0,31}$/i.test(searchParams.moveItemSku)) {
+            const matchingItems = await listCatalogItems(context, { q: searchParams.moveItemSku, status: "active", page: 1, pageSize: 50 });
+            const requestedItem = matchingItems.rows.find((item) => item.id === movementItemId);
+            if (requestedItem) {
+              prefillItemId = requestedItem.id;
+              receiptItems = { ...receiptItems, rows: [...receiptItems.rows, requestedItem] };
+            }
+          }
+        }
+      }
     } catch {
       return <ErrorPanel />;
     }
@@ -215,7 +248,20 @@ export async function CatalogWorkspace({ context, searchParams = {} }) {
 
     {office && <section className="om-subpanel">
       <div className="om-subpanel-heading"><div><h3>Deploy, return, or transfer</h3><p>Move stock within {office.name}. Source availability is checked and updated atomically when the movement is saved.</p></div></div>
-      {canManageLocations ? <TransferStockForm key={officeId} officeId={officeId} locations={transferLocations.rows} items={receiptItems.rows} initialRequestKey={randomUUID()} />
+      {canManageLocations ? <TransferStockForm
+        key={officeId + ":" + (searchParams.moveIntent ?? "") + ":" + (searchParams.moveRoomId ?? "") + ":" + (searchParams.moveItemId ?? "")}
+        officeId={officeId}
+        locations={transferLocations.rows}
+        items={receiptItems.rows}
+        initialValues={searchParams.moveIntent === "deployment" && prefillRoomLocation && prefillItemId ? {
+          intent: "deployment",
+          itemId: prefillItemId,
+          destinationLocationId: prefillRoomLocation.id,
+          quantity: searchParams.moveQuantity,
+          reference: "Room target shortage",
+        } : null}
+        initialRequestKey={randomUUID()}
+      />
         : <EmptyPanel title="Movement access required" message="Your role can view stock but cannot deploy, return, or transfer it." />}
       {(receiptItems.total > receiptItems.rows.length || transferLocations.total > transferLocations.rows.length) && <p className="pm-muted pm-selector-note">The movement selectors show the first 50 active items and locations.</p>}
     </section>}
