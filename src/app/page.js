@@ -38,9 +38,9 @@ export default function HomePage() {
                 Set up your workspace <span aria-hidden="true">→</span>
               </Link>
             )}
-            <a href="#workspace" className="text-link">
-              Explore the workspace
-            </a>
+            <Link href="/preview" className="text-link">
+              Preview the dashboard <span aria-hidden="true">↗</span>
+            </Link>
           </div>
         </section>
         <section

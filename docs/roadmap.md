@@ -4,7 +4,8 @@
 
 - One Next.js application written in JavaScript.
 - MIT license and a reproducible npm lockfile.
-- Responsive public home and staff dashboard shell.
+- Responsive public home and staff dashboard with a grouped sidebar, mobile navigation, and explicit feature states.
+- Separate public design preview with fictional data, office filtering, and searchable sample lists; no business writes or tenant data access.
 - WorkOS sign-in/callback/sign-out wiring, configuration checks, and server-side organization guard.
 - Neon PostgreSQL with Drizzle ORM, lazy server-side connection pooling, and migration/check commands.
 - Seven foundation tables with tenant and office foreign keys, unique assignments, and live constraint tests.

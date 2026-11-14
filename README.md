@@ -5,16 +5,17 @@ A personal, MIT-licensed office management project built with Next.js and JavaSc
 ## Current foundation
 
 - Next.js App Router, React, JavaScript, Tailwind CSS, and ESLint.
-- Public home page, administrator setup page, and staff dashboard shell.
+- Public home page, administrator setup page, and responsive staff dashboard with grouped sidebar navigation.
 - WorkOS AuthKit sign-in, callback, sign-out, and session integration.
 - Server helpers requiring a signed-in user and an active organization context.
 - Neon PostgreSQL connection, Drizzle ORM, and a versioned migration for seven foundation tables.
 - Live database constraint tests that roll back their fixtures.
-- Responsive layouts and explicit planned states for future office modules.
+- Office filters, searchable sample lists, mobile navigation, and explicit planned states for future office modules.
+- Public `/preview` design preview with clearly labelled fictional data; no database access or mutations.
 
 The app runs without credentials so contributors can view the starter. Staff pages redirect to setup until authentication is configured. There is no authentication bypass or demo staff account.
 
-The database foundation is implemented. Office CRUD, WorkOS synchronization, office-level permission services, visitor management, inventory, QR ordering, and notifications remain planned. The dashboard is a shell and displays no fabricated operational data.
+The database foundation is implemented. Office CRUD, WorkOS synchronization, office-level permission services, visitor management, inventory, QR ordering, and notifications remain planned. The authenticated dashboard shows the actual foundation state without fabricated operational data. The separate `/preview` route demonstrates the intended interface using fictional records. See [interface design and scope](docs/design.md).
 
 ## Local development
 
@@ -77,7 +78,8 @@ The scoped `minimatch` override keeps the ESLint parser dependency on a patched 
 src/
   app/
     auth/               Sign-in and callback route handlers
-    dashboard/          Organization-protected staff shell
+    dashboard/          Organization-protected staff workspace
+    preview/            Public design preview with fictional fixtures
     setup/              Configuration instructions
     workspace-required/ Signed-in users without organization context
     actions.js          Staff sign-out action
@@ -94,6 +96,7 @@ scripts/                Database migration and verification commands
 tests/                  Live database constraint tests
 
 docs/
+  design.md              Palette, navigation, and preview boundaries
   database.md            Database setup and implementation boundary
   domain-model.md        Agreed model and proposed workflow details
   roadmap.md             Implementation order and future work
