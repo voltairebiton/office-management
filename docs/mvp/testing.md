@@ -26,15 +26,15 @@ Avoid adding another unit runner unless a concrete test needs it. Follow install
 
 ## Isolation
 
-C00 must introduce `TEST_DATABASE_URL` and require it for integration/E2E tests. Test commands must never silently fall back to the application `DATABASE_URL`. Use a dedicated local/CI Postgres database; a dedicated Neon test branch is optional. Fail before writes when the configured test target matches the application target. Cleanup must be limited to known fixture IDs or a disposable test database; never truncate the application database.
+C00 introduces `TEST_DATABASE_URL` and requires it for database integration tests. Test commands must never silently fall back to the application `DATABASE_URL`. Use a dedicated local/CI Postgres database; a dedicated Neon test branch is optional. Fail before writes when the configured test target matches the application target. Cleanup must be limited to known fixture IDs or a disposable test database; never truncate the application database.
 
-The existing constraint suite currently uses `DATABASE_URL` and rolls back all fixtures. It was rerun once during the baseline review. Before adding tests that commit or use multiple connections, migrate the suite to the isolated target and provide clear setup instructions. Do not weaken this requirement to get CI green.
+The constraint suite now reads only `TEST_DATABASE_URL` and still rolls its fixtures back. The test target resolver rejects a target that matches `DATABASE_URL` or `DIRECT_DATABASE_URL` by hostname, port, and database name. It cannot detect infrastructure aliases (for example, two different DNS names that route to one physical database), so contributors must use the documented dedicated target. CI owns a fresh PostgreSQL service database and has no application database configuration.
 
 CI should use a Postgres 18 service and synthetic fixtures, without requiring production credentials. Provider adapter tests must not send invitations or mutate real accounts. Full WorkOS staging checks use a separately provisioned staging tenant/user.
 
 ## Target scripts and CI gates
 
-C00 will introduce or finalize:
+C00 introduces:
 
 | Script | Required behavior |
 | --- | --- |

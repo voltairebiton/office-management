@@ -1,6 +1,6 @@
 # C00 — Test foundation and CI
 
-Status: Open. Dependencies: None.
+Status: In progress. Dependencies: None.
 
 ## User outcome
 
@@ -21,7 +21,8 @@ Label tests `C00-AC1`, `C00-AC2`, etc., matching the numbered criteria below. Sh
 2. Existing constraint tests pass on the isolated database and leave no fixture data. Multi-connection tests can commit and reliably clean up their own fixtures.
 3. Unit tests can supply deterministic external-provider outcomes. Production code cannot activate a test session from a request header, cookie, query parameter, or public environment variable.
 4. CI checks install, migrations, tests, lint, build, and E2E on pull requests. A deliberate failing assertion makes the appropriate job fail.
-5. Each later contract has a completion record linking red failure, green result, and relevant regression evidence. Test and trace outputs are sanitized.
+5. Each later contract has a completion record linking red failure, green result, and relevant regression evidence.
+6. Unit, database integration, and browser acceptance scripts run locally. CI applies fresh migrations and executes each required suite against an isolated PostgreSQL service. Test and trace outputs are sanitized.
 
 ## TDD sequence and evidence
 
@@ -37,13 +38,14 @@ No new business features. No production data resets. Do not make a percentage-co
 ## Completion record
 
 - [ ] Acceptance tests written first; meaningful red failures recorded.
-- [ ] Implementation and relevant UI complete.
-- [ ] Acceptance and regression checks pass; required migrations reviewed/applied to test environment.
-- [ ] Authorization and failure behavior verified; documentation updated.
-- [ ] Evidence added below; all dependencies complete.
+- [ ] Test database isolation and guard complete.
+- [ ] Unit, integration and E2E suites run in the documented order.
+- [ ] CI run is green.
+- [ ] Documentation and setup instructions updated; test output contains no credentials.
 
 | Criterion | Test/check path | Red failure or live-check prerequisite | Green result | Commit/evidence |
 | --- | --- | --- | --- | --- |
-| Pending | — | — | — | — |
+| Database target resolver | `tests/unit/test-database-config.test.js` | Before guard: 5 safety behaviors failed against a stub that fell back to the application URL. | `npm test`: 8 assertions passed. | Local `green`; red output sanitized and summarized here. |
+| Public/auth-setup/mobile UI | `tests/e2e/access-and-preview.spec.js` | Initial run exposed three incorrect locators, corrected to the accessible setup heading and scoped office content. | `npm run test:e2e`: 5 browser tests pass locally. | Local `green`; fresh-schema CI integration run pending. |
 
 Do not mark complete based on a UI screenshot, a build alone, or mocked provider success alone.

@@ -58,7 +58,10 @@ Put the pooled Neon connection string in `.env.local` as `DATABASE_URL`, and the
 ```sh
 npm run db:migrate
 npm run db:check
+npm run test
+npm run db:migrate:test
 npm run test:db
+npm run test:e2e
 ```
 
 The first migration creates users, organizations, memberships, offices, rooms, office access records, and room assignments. Business records share the database and are scoped by the local organization UUID. See [database setup and constraints](docs/database.md).
@@ -72,6 +75,10 @@ See [Neon's pricing](https://neon.com/pricing) for current free-plan allowances.
 | `npm run dev`   | Start local development.   |
 | `npm run lint`  | Run ESLint.                |
 | `npm run build` | Create a production build. |
+| `npm test` | Run deterministic unit tests. |
+| `npm run db:migrate:test` | Migrate only the isolated test database. |
+| `npm run test:db` | Run PostgreSQL integration tests against that database. |
+| `npm run test:e2e` | Run Chromium browser acceptance tests against the production build. |
 | `npm start`     | Run the production build.  |
 
 The scoped `minimatch` override keeps the ESLint parser dependency on a patched release while its upstream range remains on version 10. The scoped `esbuild` override patches the legacy loader used by Drizzle Kit. Both apply to development tooling.

@@ -13,6 +13,18 @@ Connection strings are server credentials. `.env.local` is ignored by Git and mu
 
 The server accessor is `getDatabase()` from `src/db/index.js`, which imports `server-only`. It creates a pool on first use and reuses it across requests and development reloads. Public page rendering and production builds do not contact the database. CLI commands use the connection factory directly and close their pools when finished.
 
+## Isolated test database
+
+Integration tests require `TEST_DATABASE_URL` set to a PostgreSQL database dedicated to tests. Never copy `DATABASE_URL` or `DIRECT_DATABASE_URL` into it. The migration and test commands check the endpoint and database name against both application URLs, refuse a match, and never fall back to either application variable. The check cannot detect two hostnames that alias the same underlying database; use a dedicated local database, PostgreSQL service, or Neon branch.
+
+```sh
+npm test
+npm run db:migrate:test
+npm run test:db
+```
+
+`npm test` is independent of PostgreSQL. `db:migrate:test` migrates only `TEST_DATABASE_URL`. `test:db` fails before connecting if that explicit URL is missing. CI uses a fresh PostgreSQL service for each run.
+
 ## Commands
 
 | Command               | Purpose                                                                                                     |
@@ -20,7 +32,10 @@ The server accessor is `getDatabase()` from `src/db/index.js`, which imports `se
 | `npm run db:generate` | Generate a versioned SQL migration after changing the JavaScript schema. Review the SQL before applying it. |
 | `npm run db:migrate`  | Apply pending migrations with Drizzle's migration journal. Re-running does not recreate tables.             |
 | `npm run db:check`    | Verify the application connection and the seven foundation tables.                                          |
-| `npm run test:db`     | Verify database constraints using synthetic records in one rolled-back transaction.                         |
+| `npm test`             | Run deterministic unit tests without a database.                                                     |
+| `npm run db:migrate:test` | Apply migrations only to `TEST_DATABASE_URL`.                                                     |
+| `npm run test:db`       | Verify database constraints using synthetic records in one rolled-back transaction on test DB.       |
+| `npm run test:e2e`      | Run browser acceptance tests against the production build.                                            |
 
 The tests require a reachable migrated database. They do not leave fixture records behind. They check real foreign keys and uniqueness constraints; they do not verify WorkOS sign-in or authorization services that have not been implemented.
 

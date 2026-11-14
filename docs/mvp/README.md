@@ -19,7 +19,7 @@ This follows the previously agreed minimum. Visitor management, QR refreshment o
 | Database | Dedicated Neon project; Drizzle migration for users, organizations, memberships, offices, office access, rooms, and room assignments |
 | Integrity tests | Existing live PostgreSQL suite passes: 12 behavior subtests plus their parent, reported as 13 tests |
 | Operational features | No tenant/member projection service, office authorization service, business CRUD, inventory tables, or stock operations yet |
-| Automation | No CI workflow, unit/service harness, browser suite, or isolated concurrency-test database configured yet |
+| Automation | C00 now adds isolated test target checks, Node unit tests, Chromium preview/auth boundary journeys, and GitHub Actions with fresh PostgreSQL migrations; the first remote CI run is pending |
 
 The public preview is never an authenticated acceptance environment. A successful build does not establish tenant isolation or complete sign-in. Existing work was not documented as test-first; TDD evidence starts with the contracts below.
 
@@ -42,7 +42,7 @@ All contracts are open. “Foundation exists” means some supporting code exist
 
 | ID | Deliverable | Depends on | State |
 | --- | --- | --- | --- |
-| [C00](contracts/C00-test-foundation.md) | Test harness, isolation, CI, TDD evidence | None | Open; existing constraint suite only |
+| [C00](contracts/C00-test-foundation.md) | Test harness, isolation, CI, TDD evidence | None | In progress; unit/E2E pass locally, remote CI pending |
 | [C01](contracts/C01-identity.md) | Real sign-in, tenant bootstrap, member synchronization | C00 | Open; auth wiring exists |
 | [C02](contracts/C02-authorization.md) | Tenant context, office permissions, access lifecycle | C01 | Open |
 | [C03](contracts/C03-offices-rooms.md) | Office and room management | C02 | Open; tables exist |
@@ -54,6 +54,8 @@ All contracts are open. “Foundation exists” means some supporting code exist
 | [C09](contracts/C09-room-requirements.md) | Room inventory targets and shortages | C04, C07, C08 | Open |
 | [C10](contracts/C10-live-dashboard.md) | Real dashboard and complete staff UI integration | C03–C09 | Open; preview design exists |
 | [C11](contracts/C11-release.md) | Complete journeys, deployment, operational readiness | C00–C10 | Open |
+
+C00 is currently in progress. It does not depend on WorkOS, a hosting provider, or Neon test storage: CI uses its own disposable PostgreSQL service. Keep C01 gated on a real WorkOS server key/webhook setup, but continue unit and service work that can be tested with an explicit provider adapter.
 
 Execution order: C00 → C01 → C02 → C03 → C04 → C05 → C06 → C07 → C08 → C09 → C10 → C11. Build each service with its usable UI slice; C10 connects cross-module overview data and checks consistency rather than postponing all UI to the end.
 

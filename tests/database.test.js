@@ -3,9 +3,15 @@ import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
 import test from "node:test";
 import { createDatabase } from "../src/db/connection.js";
+import { resolveTestDatabaseUrl } from "../scripts/test-database-config.js";
 
 test("Postgres enforces tenant, office, and room assignment constraints", async (t) => {
-  const { pool } = createDatabase(process.env.DATABASE_URL);
+  const testDatabaseUrl = resolveTestDatabaseUrl({
+    testDatabaseUrl: process.env.TEST_DATABASE_URL,
+    databaseUrl: process.env.DATABASE_URL,
+    directDatabaseUrl: process.env.DIRECT_DATABASE_URL,
+  });
+  const { pool } = createDatabase(testDatabaseUrl);
   let client;
   try {
     client = await pool.connect();

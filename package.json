@@ -10,7 +10,10 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "node scripts/migrate-db.js",
     "db:check": "node scripts/check-db.js",
-    "test:db": "node --test tests/database.test.js"
+    "test:db": "node --test tests/database.test.js",
+    "test": "node --test tests/unit/*.test.js",
+    "db:migrate:test": "node scripts/migrate-test-db.js",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@next/env": "^16.4.6",
@@ -24,6 +27,7 @@
     "server-only": "^0.0.1"
   },
   "devDependencies": {
+    "@playwright/test": "^1.65.1",
     "@tailwindcss/turbopack": "4.3.3",
     "drizzle-kit": "^0.31.11",
     "eslint": "^9.39.5",
