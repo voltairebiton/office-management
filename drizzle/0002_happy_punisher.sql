@@ -1,0 +1,1 @@
+ALTER TABLE "organization_memberships" ADD COLUMN "granted_capabilities" text[] DEFAULT ARRAY[]::text[] NOT NULL;

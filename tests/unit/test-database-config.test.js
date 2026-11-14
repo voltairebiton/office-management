@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { resolveTestDatabaseUrl } from "../../scripts/test-database-config.js";
 
-test("isolated integration database configuration", async (t) => {
+test("C00-AC1 isolated integration database configuration", async (t) => {
   const safeTestUrl = "postgresql://test_user:test_password@localhost:5433/office_test";
   await t.test("requires an explicit test database URL", () => {
     assert.throws(

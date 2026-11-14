@@ -31,7 +31,7 @@ npm run test:db
 | --------------------- | ----------------------------------------------------------------------------------------------------------- |
 | `npm run db:generate` | Generate a versioned SQL migration after changing the JavaScript schema. Review the SQL before applying it. |
 | `npm run db:migrate`  | Apply pending migrations with Drizzle's migration journal. Re-running does not recreate tables.             |
-| `npm run db:check`    | Verify the application connection and all eight required tables.                                      |
+| `npm run db:check`    | Verify the application connection and all nine required tables.                                      |
 | `npm test`             | Run deterministic unit tests without a database.                                                     |
 | `npm run db:migrate:test` | Apply migrations only to `TEST_DATABASE_URL`.                                                     |
 | `npm run test:db`       | Verify database constraints using synthetic records in one rolled-back transaction on test DB.       |
@@ -51,7 +51,7 @@ The PostgreSQL integration tests require a reachable test database migrated from
 | `rooms`                    | Rooms belonging to an office, with unique codes per office and optional nonnegative capacity. |
 | `room_assignments`         | Employee assignments with start/end times and retained history.                               |
 
-The next migration adds `processed_workos_events`, keyed by provider event ID. It stores event type and timestamps only, never the webhook payload.
+Subsequent migrations add `processed_workos_events`, keyed by provider event ID, and immutable `audit_events` tied to the actor's tenant membership and office. The event table stores only type and timestamps, never webhook payloads; audit snapshots reject secrets and contact fields.
 
 Composite foreign keys enforce matching organizations on office access and rooms. Room assignments reference both the employee's office access record and a room in that same office. A partial unique index permits one active assigned room per member per office, while allowing historical assignments and assignments in multiple offices.
 

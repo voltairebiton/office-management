@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-test("public preview shows fictional data and planned features clearly", async ({ page }) => {
+test("C00-AC3 public preview shows fictional data and planned features clearly", async ({ page }) => {
   await page.goto("/preview");
   await expect(page.getByText("Fictional sample data. Changes are not saved.")).toBeVisible();
   await expect(page.getByRole("heading", { name: "Workspace overview" })).toBeVisible();
@@ -9,7 +9,7 @@ test("public preview shows fictional data and planned features clearly", async (
   await expect(page.getByText("Room assignments · not attendance")).toBeVisible();
 });
 
-test("anonymous staff requests reach setup when WorkOS is not configured", async ({ page }) => {
+test("C00-AC3 anonymous staff requests reach setup when WorkOS is not configured", async ({ page }) => {
   await page.goto("/dashboard?view=offices");
   await expect(page).toHaveURL(/\/setup$/);
   await expect(page.getByRole("heading", { name: /connect your workspace/i })).toBeVisible();

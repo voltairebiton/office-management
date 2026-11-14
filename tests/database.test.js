@@ -5,7 +5,7 @@ import test from "node:test";
 import { createDatabase } from "../src/db/connection.js";
 import { resolveTestDatabaseUrl } from "../scripts/test-database-config.js";
 
-test("Postgres enforces tenant, office, and room assignment constraints", async (t) => {
+test("C00-AC2 Postgres enforces tenant, office, and room assignment constraints", async (t) => {
   const testDatabaseUrl = resolveTestDatabaseUrl({
     testDatabaseUrl: process.env.TEST_DATABASE_URL,
     databaseUrl: process.env.DATABASE_URL,

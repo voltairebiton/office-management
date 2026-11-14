@@ -5,6 +5,7 @@ import {
   foreignKey,
   index,
   integer,
+  jsonb,
   pgEnum,
   pgTable,
   text,
@@ -69,6 +70,10 @@ export const organizationMemberships = pgTable(
     workosMembershipId: text("workos_membership_id").notNull().unique(),
     status: membershipStatus("status").default("pending").notNull(),
     role: text("role"),
+    grantedCapabilities: text("granted_capabilities")
+      .array()
+      .default(sql`ARRAY[]::text[]`)
+      .notNull(),
     ...timestamps(),
   },
   (table) => [
@@ -79,6 +84,11 @@ export const organizationMemberships = pgTable(
     unique("memberships_organization_user_key").on(
       table.organizationId,
       table.userId,
+    ),
+    unique("memberships_organization_user_membership_key").on(
+      table.organizationId,
+      table.userId,
+      table.id,
     ),
     index("memberships_user_idx").on(table.userId),
   ],
@@ -229,3 +239,46 @@ export const processedWorkOSEvents = pgTable("processed_workos_events", {
     .defaultNow()
     .notNull(),
 });
+
+export const auditEvents = pgTable(
+  "audit_events",
+  {
+    id: primaryId(),
+    organizationId: uuid("organization_id").notNull(),
+    actorUserId: uuid("actor_user_id").notNull(),
+    actorMembershipId: uuid("actor_membership_id").notNull(),
+    officeId: uuid("office_id"),
+    operation: text("operation").notNull(),
+    resourceType: text("resource_type").notNull(),
+    resourceId: text("resource_id").notNull(),
+    requestId: text("request_id").notNull(),
+    before: jsonb("before"),
+    after: jsonb("after"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    foreignKey({
+      name: "audit_events_actor_membership_fk",
+      columns: [table.organizationId, table.actorUserId, table.actorMembershipId],
+      foreignColumns: [
+        organizationMemberships.organizationId,
+        organizationMemberships.userId,
+        organizationMemberships.id,
+      ],
+    }),
+    foreignKey({
+      name: "audit_events_office_fk",
+      columns: [table.organizationId, table.officeId],
+      foreignColumns: [offices.organizationId, offices.id],
+    }),
+    index("audit_events_organization_created_idx").on(
+      table.organizationId,
+      table.createdAt.desc(),
+    ),
+    check("audit_events_operation_not_empty", sql`length(btrim(${table.operation})) > 0`),
+    check("audit_events_resource_type_not_empty", sql`length(btrim(${table.resourceType})) > 0`),
+    check("audit_events_resource_id_not_empty", sql`length(btrim(${table.resourceId})) > 0`),
+  ],
+);

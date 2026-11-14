@@ -16,7 +16,7 @@ This follows the previously agreed minimum. Visitor management, QR refreshment o
 | Design | Responsive grouped sidebar, overview, module destinations, public fictional preview, office filtering and search in preview |
 | Authentication wiring | WorkOS proxy, sign-in/callback/sign-out, fresh provider membership check, transactional local identity projection, and explicit first-admin bootstrap; real organization login still unverified |
 | WorkOS configuration | Office Management staging app has localhost:3107 callback and sign-out URLs; client ID, cookie secret, and callback configured; server API key and webhook secret still missing |
-| Database | Dedicated Neon project; Drizzle migrations for identity, offices/rooms/assignments, and idempotent WorkOS webhook event IDs |
+| Database | Dedicated Neon project; Drizzle migrations for identity, offices/rooms/assignments, idempotent WorkOS webhook IDs, and immutable audit history |
 | Integrity tests | Existing live PostgreSQL suite passes: 12 behavior subtests plus their parent, reported as 13 tests |
 | Operational features | C01 identity projection is implemented; office authorization service, business CRUD, inventory tables, and stock operations remain |
 | Automation | C00 local unit/lint/build/E2E gates pass. The first GitHub run failed immediately with zero jobs/logs; workflow context was corrected, and the next run will validate the fresh PostgreSQL migration/integration sequence |
@@ -44,7 +44,7 @@ All contracts are open. “Foundation exists” means some supporting code exist
 | --- | --- | --- | --- |
 | [C00](contracts/C00-test-foundation.md) | Test harness, isolation, CI, TDD evidence | None | In progress; unit/E2E pass locally, remote CI pending |
 | [C01](contracts/C01-identity.md) | Real sign-in, tenant bootstrap, member synchronization | C00 | In progress; provider reconciliation, transactional upserts, and guarded bootstrap are implemented; API key, webhook delivery, and live acceptance remain |
-| [C02](contracts/C02-authorization.md) | Tenant context, office permissions, access lifecycle | C01 | Open |
+| [C02](contracts/C02-authorization.md) | Tenant context, office permissions, access lifecycle | C01 | In progress; tenant/office contexts, capability checks, and immutable audit storage are implemented |
 | [C03](contracts/C03-offices-rooms.md) | Office and room management | C02 | Open; tables exist |
 | [C04](contracts/C04-people-assignments.md) | Staff directory, office access, room assignments | C02, C03 | Open; tables exist |
 | [C05](contracts/C05-catalog-locations.md) | Item catalog and stock locations | C02, C03 | Open |
