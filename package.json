@@ -6,18 +6,26 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "node scripts/migrate-db.js",
+    "db:check": "node scripts/check-db.js",
+    "test:db": "node --test tests/database.test.js"
   },
   "dependencies": {
+    "@next/env": "^16.4.6",
     "@workos-inc/authkit-nextjs": "^4.6.3",
     "@workos-inc/node": "^12.3.0",
+    "drizzle-orm": "^0.45.4",
     "next": "16.4.6",
+    "pg": "^8.23.1",
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "server-only": "^0.0.1"
   },
   "devDependencies": {
     "@tailwindcss/turbopack": "4.3.3",
+    "drizzle-kit": "^0.31.11",
     "eslint": "^9.39.5",
     "eslint-config-next": "16.4.6",
     "tailwindcss": "4.3.3"
@@ -34,6 +42,10 @@
   "overrides": {
     "@typescript-eslint/typescript-estree": {
       "minimatch": "^11.0.8"
+    },
+    "@esbuild-kit/core-utils": {
+      "esbuild": "^0.25.12"
     }
-  }
+  },
+  "type": "module"
 }

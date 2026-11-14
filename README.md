@@ -8,11 +8,13 @@ A personal, MIT-licensed office management project built with Next.js and JavaSc
 - Public home page, administrator setup page, and staff dashboard shell.
 - WorkOS AuthKit sign-in, callback, sign-out, and session integration.
 - Server helpers requiring a signed-in user and an active organization context.
+- Neon PostgreSQL connection, Drizzle ORM, and a versioned migration for seven foundation tables.
+- Live database constraint tests that roll back their fixtures.
 - Responsive layouts and explicit planned states for future office modules.
 
 The app runs without credentials so contributors can view the starter. Staff pages redirect to setup until authentication is configured. There is no authentication bypass or demo staff account.
 
-Office CRUD, database persistence, office-level permissions, visitor management, inventory, QR ordering, and notifications are not implemented yet. The dashboard is a shell and displays no fabricated operational data. This is the first project commit, not a completed product.
+The database foundation is implemented. Office CRUD, WorkOS synchronization, office-level permission services, visitor management, inventory, QR ordering, and notifications remain planned. The dashboard is a shell and displays no fabricated operational data.
 
 ## Local development
 
@@ -20,7 +22,7 @@ Use Node.js 24 LTS (recommended; see `.nvmrc`) and npm. Node.js 22.13 or newer i
 
 ```sh
 npm ci
-cp .env.example .env.local
+cp -n .env.example .env.local
 npm run dev
 ```
 
@@ -38,15 +40,23 @@ Open [localhost:3000](http://localhost:3000). Configuration can be added after s
 
 `NEXT_PUBLIC_WORKOS_REDIRECT_URI` must match the callback URL in WorkOS. Client ID, cookie password, and redirect URI are required. `WORKOS_API_KEY` is optional for the current sign-in flow; future server-side organization management will need it. Keep real credentials in `.env.local`, which Git ignores. Configure these values before building for production, including the production callback URL.
 
-A signed-in user without organization context is sent to `/workspace-required`. Organization provisioning, switching, local membership projections, roles, and office access management will be implemented alongside the first persistent office workflow. Future business queries must derive their organization ID from `requireOrganization()` and enforce tenant and office relationships in the database.
+A signed-in user without organization context is sent to `/workspace-required`. The schema includes local organization and membership records; provisioning, WorkOS synchronization, organization switching, and office permission services remain planned. `requireOrganization()` returns the verified `workosOrganizationId`. Resolve that provider ID to the local organization UUID before querying tenant records. Tenant and office relationships must also be enforced in the database.
 
 Authentication wiring requires a real WorkOS environment for an end-to-end sign-in check. A successful build alone does not verify an external sign-in flow.
 
 ## Database
 
-The selected database is **PostgreSQL hosted on Neon**. The ORM, migrations, and application connection are the next implementation step.
+The database uses **PostgreSQL hosted on Neon**, with **Drizzle ORM** and the `pg` driver.
 
-Create a Neon project and put its pooled connection string in `.env.local` as `DATABASE_URL`. The variable is reserved in `.env.example`; the current boilerplate does not yet connect to it. Each tenant's records will share the database and be scoped by organization ID as described in the domain model.
+Put the pooled Neon connection string in `.env.local` as `DATABASE_URL`, and the direct connection string as `DIRECT_DATABASE_URL` for migrations. These variables stay on the server. The connection is created only when requested, so building or viewing the public starter requires no database credentials.
+
+```sh
+npm run db:migrate
+npm run db:check
+npm run test:db
+```
+
+The first migration creates users, organizations, memberships, offices, rooms, office access records, and room assignments. Business records share the database and are scoped by the local organization UUID. See [database setup and constraints](docs/database.md).
 
 See [Neon's pricing](https://neon.com/pricing) for current free-plan allowances.
 
@@ -59,7 +69,7 @@ See [Neon's pricing](https://neon.com/pricing) for current free-plan allowances.
 | `npm run build` | Create a production build. |
 | `npm start`     | Run the production build.  |
 
-The scoped `minimatch` override keeps the ESLint parser dependency on a patched release while its upstream range remains on version 10. See [the dependency advisory](https://github.com/advisories/GHSA-g3hv-75wg-m249).
+The scoped `minimatch` override keeps the ESLint parser dependency on a patched release while its upstream range remains on version 10. The scoped `esbuild` override patches the legacy loader used by Drizzle Kit. Both apply to development tooling.
 
 ## Structure
 
@@ -71,6 +81,7 @@ src/
     setup/              Configuration instructions
     workspace-required/ Signed-in users without organization context
     actions.js          Staff sign-out action
+  db/                   Schema, connection factory, and server-only database accessor
   components/           Shared UI
   lib/
     auth-config.js      Authentication configuration checks
@@ -78,7 +89,12 @@ src/
     modules.js          Descriptions of planned modules
   proxy.js              WorkOS session proxy
 
+drizzle/                Versioned SQL migrations and schema snapshots
+scripts/                Database migration and verification commands
+tests/                  Live database constraint tests
+
 docs/
+  database.md            Database setup and implementation boundary
   domain-model.md        Agreed model and proposed workflow details
   roadmap.md             Implementation order and future work
 ```
@@ -93,7 +109,7 @@ docs/
 - Office helpers receive notifications and prepare/deliver orders.
 - Staff management and fulfillment use authenticated, office-scoped access.
 
-See [the domain model](docs/domain-model.md) and [the roadmap](docs/roadmap.md). Neon PostgreSQL is the selected database; the ORM remains to be chosen.
+See [the domain model](docs/domain-model.md) and [the roadmap](docs/roadmap.md). Neon PostgreSQL and Drizzle ORM provide the database foundation.
 
 ## References
 

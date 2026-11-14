@@ -1,6 +1,6 @@
 # Office Management — Initial Data and Workflow Model
 
-Status: model draft, updated 14 November 2026. A Next.js application shell and WorkOS authentication wiring are implemented. The business workflows and database records described below remain planned; see the [README](../README.md) for the current implementation boundary.
+Status: model draft, updated 14 November 2026. A Next.js application shell, WorkOS authentication wiring, Neon connection, and seven identity/office/room foundation tables are implemented. The business workflows and remaining module schemas described below remain planned; see the [README](../README.md) for the current implementation boundary.
 
 ## Confirmed requirements
 
@@ -49,7 +49,7 @@ Proposed constraints:
 - Office codes are unique within an organization; room codes are unique within an office.
 - An office assignment connects a membership and office in the same organization.
 - A room assignment requires membership access to that room's office.
-- A member cannot have duplicate active assignments to the same room.
+- A member has at most one active room assignment per office. Ending an assignment preserves its history and permits a replacement.
 - Archived offices and rooms retain their historical relationships and cannot accept new operational activity.
 
 WorkOS membership is the authority for staff access to the application. Local identity and membership records are projections for business relationships; they must not independently grant staff access after the corresponding WorkOS membership has been removed or deactivated. The QR ordering portal authorizes its limited operations through a separate ordering credential, described below.
@@ -249,7 +249,7 @@ Subsequent complete features could include refreshment ordering through desk QR 
 
 Attendance is deferred. If added later, attendance or room presence records will capture actual check-in/out activity separately from an employee's normal room assignment. The exact attendance workflow can be designed when that feature is selected.
 
-Authentication, tenant isolation, and data consistency are part of the foundation. Future work adds functioning capabilities to it. The selected database is PostgreSQL hosted on Neon. The ORM remains to be chosen, and database connectivity and migrations remain planned.
+Authentication, tenant isolation, and data consistency are part of the foundation. Future work adds functioning capabilities to it. The database uses PostgreSQL hosted on Neon and Drizzle ORM. The first migration covers identities, organizations, offices, rooms, and employee assignments; the inventory, visitor, and refreshment schemas remain future work.
 
 ## WorkOS references
 

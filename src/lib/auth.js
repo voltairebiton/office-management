@@ -14,7 +14,7 @@ export async function requireOrganization() {
 
   return {
     user: session.user,
-    organizationId: session.organizationId,
+    workosOrganizationId: session.organizationId,
     role: session.role,
     permissions: session.permissions ?? [],
   };

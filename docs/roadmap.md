@@ -1,18 +1,20 @@
 # Implementation roadmap
 
-## Foundation in this commit
+## Implemented foundation
 
 - One Next.js application written in JavaScript.
 - MIT license and a reproducible npm lockfile.
 - Responsive public home and staff dashboard shell.
 - WorkOS sign-in/callback/sign-out wiring, configuration checks, and server-side organization guard.
+- Neon PostgreSQL with Drizzle ORM, lazy server-side connection pooling, and migration/check commands.
+- Seven foundation tables with tenant and office foreign keys, unique assignments, and live constraint tests.
 - The agreed domain model.
 
 ## Next usable milestone: offices and room inventory
 
-Use Neon PostgreSQL, choose the ORM, and add the initial migrations. Then implement these as complete workflows:
+The Neon connection and first Drizzle migration are in place. Implement these complete workflows next:
 
-1. Organization/member projections and office-scoped permissions.
+1. WorkOS synchronization for organization/member projections and office-scoped permission services.
 2. Office and room creation, editing, and archiving.
 3. Employee room assignments and assigned headcounts.
 4. Item catalog, stock locations, receipts, and auditable movements.
