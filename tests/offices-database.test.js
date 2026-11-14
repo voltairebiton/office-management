@@ -134,10 +134,12 @@ test("C03 office and room services enforce scope, history, and audit in Postgres
         await assert.rejects(
           createOffice(managerContext, { name: "No", code: "NO" }, transaction),
           { code: "FORBIDDEN" },
+          "office managers cannot create tenant offices",
         );
         await assert.rejects(
           createRoom(managerContext, office.id, { name: "Duplicate", code: "br-1" }, transaction),
           { code: "CONFLICT" },
+          "room codes are unique within one office",
         );
         await assert.rejects(
           createRoom(managerContext, "00000000-0000-4000-8000-000000000000", {
@@ -145,10 +147,11 @@ test("C03 office and room services enforce scope, history, and audit in Postgres
             code: "P1",
           }, transaction),
           { code: "NOT_FOUND" },
+          "managers cannot address a foreign office",
         );
         await assert.rejects(archiveOffice(officeAdminContext, office.id, transaction), {
           code: "CONFLICT",
-        });
+        }, "offices cannot be archived before their active rooms");
         const [assignment] = await transaction
           .insert(roomAssignments)
           .values({
@@ -160,7 +163,7 @@ test("C03 office and room services enforce scope, history, and audit in Postgres
           .returning();
         await assert.rejects(archiveRoom(managerContext, office.id, room.id, transaction), {
           code: "CONFLICT",
-        });
+        }, "rooms with active assignments cannot be archived");
         await transaction
           .update(roomAssignments)
           .set({ endedAt: new Date() })
@@ -177,6 +180,7 @@ test("C03 office and room services enforce scope, history, and audit in Postgres
         await assert.rejects(
           updateOffice(officeAdminContext, office.id, { name: "Stale", code: officeCode }, office.updatedAt, transaction),
           { code: "CONFLICT" },
+          "stale office edits return a conflict",
         );
 
         await archiveRoom(managerContext, office.id, room.id, transaction);

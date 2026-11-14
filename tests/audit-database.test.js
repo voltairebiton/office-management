@@ -30,7 +30,7 @@ test("C02-AC7 audit rows are transactionally scoped and immutable in Postgres", 
   });
   const { db, pool } = createDatabase(testDatabaseUrl);
   const suffix = randomUUID();
-  const officeCode = `A-${suffix.toUpperCase()}`;
+  const officeCode = `A-${suffix.slice(0, 8).toUpperCase()}`;
   const rollbackFixture = new Error("ROLLBACK_AUDIT_FIXTURE");
 
   try {

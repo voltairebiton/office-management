@@ -63,8 +63,8 @@ test("C02-AC1/C02-AC3 Postgres authorization context is tenant and office scoped
         const [officeA, officeB] = await transaction
           .insert(offices)
           .values([
-            { organizationId: organization.id, name: "North office", code: `N-${suffix.toUpperCase()}` },
-            { organizationId: organization.id, name: "South office", code: `S-${suffix.toUpperCase()}` },
+            { organizationId: organization.id, name: "North office", code: `N-${suffix.slice(0, 8).toUpperCase()}` },
+            { organizationId: organization.id, name: "South office", code: `S-${suffix.slice(0, 8).toUpperCase()}` },
           ])
           .returning();
         await transaction.insert(officeAssignments).values({
