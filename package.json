@@ -10,10 +10,11 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "node scripts/migrate-db.js",
     "db:check": "node scripts/check-db.js",
-    "test:db": "node --test tests/database.test.js",
+    "test:db": "node --conditions=react-server --test tests/database.test.js tests/identity-database.test.js",
     "test": "node --test tests/unit/*.test.js",
     "db:migrate:test": "node scripts/migrate-test-db.js",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "workos:bootstrap-admin": "node --conditions=react-server scripts/bootstrap-admin.js"
   },
   "dependencies": {
     "@next/env": "^16.4.6",

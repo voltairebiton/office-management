@@ -14,12 +14,12 @@ This follows the previously agreed minimum. Visitor management, QR refreshment o
 | --- | --- |
 | Repository | Public MIT repository; Next.js App Router, JavaScript, React, npm lockfile |
 | Design | Responsive grouped sidebar, overview, module destinations, public fictional preview, office filtering and search in preview |
-| Authentication wiring | WorkOS proxy, sign-in/callback/sign-out handlers, protected organization-session helper; not yet verified with a real organization login |
-| WorkOS configuration | Office Management staging application has localhost:3107 callback and sign-out URLs; local client ID, cookie secret, and callback configured |
-| Database | Dedicated Neon project; Drizzle migration for users, organizations, memberships, offices, office access, rooms, and room assignments |
+| Authentication wiring | WorkOS proxy, sign-in/callback/sign-out, fresh provider membership check, transactional local identity projection, and explicit first-admin bootstrap; real organization login still unverified |
+| WorkOS configuration | Office Management staging app has localhost:3107 callback and sign-out URLs; client ID, cookie secret, and callback configured; server API key and webhook secret still missing |
+| Database | Dedicated Neon project; Drizzle migrations for identity, offices/rooms/assignments, and idempotent WorkOS webhook event IDs |
 | Integrity tests | Existing live PostgreSQL suite passes: 12 behavior subtests plus their parent, reported as 13 tests |
-| Operational features | No tenant/member projection service, office authorization service, business CRUD, inventory tables, or stock operations yet |
-| Automation | C00 now adds isolated test target checks, Node unit tests, Chromium preview/auth boundary journeys, and GitHub Actions with fresh PostgreSQL migrations; the first remote CI run is pending |
+| Operational features | C01 identity projection is implemented; office authorization service, business CRUD, inventory tables, and stock operations remain |
+| Automation | C00 local unit/lint/build/E2E gates pass. The first GitHub run failed immediately with zero jobs/logs; workflow context was corrected, and the next run will validate the fresh PostgreSQL migration/integration sequence |
 
 The public preview is never an authenticated acceptance environment. A successful build does not establish tenant isolation or complete sign-in. Existing work was not documented as test-first; TDD evidence starts with the contracts below.
 
@@ -43,7 +43,7 @@ All contracts are open. “Foundation exists” means some supporting code exist
 | ID | Deliverable | Depends on | State |
 | --- | --- | --- | --- |
 | [C00](contracts/C00-test-foundation.md) | Test harness, isolation, CI, TDD evidence | None | In progress; unit/E2E pass locally, remote CI pending |
-| [C01](contracts/C01-identity.md) | Real sign-in, tenant bootstrap, member synchronization | C00 | Open; auth wiring exists |
+| [C01](contracts/C01-identity.md) | Real sign-in, tenant bootstrap, member synchronization | C00 | In progress; provider reconciliation, transactional upserts, and guarded bootstrap are implemented; API key, webhook delivery, and live acceptance remain |
 | [C02](contracts/C02-authorization.md) | Tenant context, office permissions, access lifecycle | C01 | Open |
 | [C03](contracts/C03-offices-rooms.md) | Office and room management | C02 | Open; tables exist |
 | [C04](contracts/C04-people-assignments.md) | Staff directory, office access, room assignments | C02, C03 | Open; tables exist |

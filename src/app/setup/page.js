@@ -31,7 +31,8 @@ export default function SetupPage() {
               Copy <code>.env.example</code> to <code>.env.local</code>.
             </li>
             <li>
-              Add your WorkOS client ID, cookie password, and callback URL.
+              Add your WorkOS client ID, server API key, cookie password,
+              callback URL, and application database URL.
             </li>
             <li>
               Configure the matching URLs in your WorkOS application and restart

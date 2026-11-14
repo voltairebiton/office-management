@@ -220,3 +220,12 @@ export const roomAssignments = pgTable(
     ),
   ],
 );
+
+export const processedWorkOSEvents = pgTable("processed_workos_events", {
+  workosEventId: text("workos_event_id").primaryKey(),
+  eventType: text("event_type").notNull(),
+  providerCreatedAt: timestamp("provider_created_at", { withTimezone: true }),
+  processedAt: timestamp("processed_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+});

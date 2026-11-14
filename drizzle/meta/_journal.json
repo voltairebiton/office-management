@@ -8,6 +8,13 @@
       "when": 1794664001092,
       "tag": "0000_office_foundation",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1794669547183,
+      "tag": "0001_typical_swarm",
+      "breakpoints": true
     }
   ]
 }

@@ -14,6 +14,7 @@ try {
     "office_assignments",
     "rooms",
     "room_assignments",
+    "processed_workos_events",
   ];
   const result = await connection.pool.query(
     "select table_name from information_schema.tables where table_schema = 'public' and table_name = any($1::text[]) order by table_name",
@@ -23,7 +24,7 @@ try {
     throw new Error("Run the database migrations first.");
   }
   console.log(
-    "Database connection verified; all 7 foundation tables are present.",
+    "Database connection verified; all 8 required tables are present.",
   );
 } catch (error) {
   console.error(

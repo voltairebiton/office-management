@@ -1,7 +1,9 @@
 const requiredVariables = [
   "WORKOS_CLIENT_ID",
+  "WORKOS_API_KEY",
   "WORKOS_COOKIE_PASSWORD",
   "NEXT_PUBLIC_WORKOS_REDIRECT_URI",
+  "DATABASE_URL",
 ];
 
 export function getAuthConfiguration() {

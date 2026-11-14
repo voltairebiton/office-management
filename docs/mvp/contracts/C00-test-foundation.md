@@ -47,5 +47,6 @@ No new business features. No production data resets. Do not make a percentage-co
 | --- | --- | --- | --- | --- |
 | Database target resolver | `tests/unit/test-database-config.test.js` | Before guard: 5 safety behaviors failed against a stub that fell back to the application URL. | `npm test`: 8 assertions passed. | Local `green`; red output sanitized and summarized here. |
 | Public/auth-setup/mobile UI | `tests/e2e/access-and-preview.spec.js` | Initial run exposed three incorrect locators, corrected to the accessible setup heading and scoped office content. | `npm run test:e2e`: 5 browser tests pass locally. | Local `green`; fresh-schema CI integration run pending. |
+| GitHub workflow | `.github/workflows/ci.yml` | First push recorded a failed run with zero jobs and no logs. The PostgreSQL mapped port expression was moved from job-level to step-level environment, and manual dispatch was added. | Awaiting a new GitHub run after this correction. | [Run 43607649296](https://github.com/voltairebiton/office-management/actions/runs/43607649296) has no job logs. |
 
 Do not mark complete based on a UI screenshot, a build alone, or mocked provider success alone.

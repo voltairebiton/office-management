@@ -15,7 +15,7 @@ A personal, MIT-licensed office management project built with Next.js and JavaSc
 
 The app runs without credentials so contributors can view the starter. Staff pages redirect to setup until authentication is configured. There is no authentication bypass or demo staff account.
 
-The database foundation is implemented. Office CRUD, WorkOS synchronization, office-level permission services, visitor management, inventory, QR ordering, and notifications remain planned. The authenticated dashboard shows the actual foundation state without fabricated operational data. The separate `/preview` route demonstrates the intended interface using fictional records. See [interface design and scope](docs/design.md).
+The database foundation and initial WorkOS identity reconciliation are implemented. Office CRUD, office-level permissions, visitor management, inventory, QR ordering, and notifications remain planned. Real WorkOS sign-in, API access, webhook delivery, and first-admin bootstrap still need staging credentials and acceptance. The separate `/preview` route demonstrates the intended interface using fictional records. See [interface design and scope](docs/design.md).
 
 ## MVP execution plan
 
@@ -39,13 +39,16 @@ Open [localhost:3000](http://localhost:3000). Configuration can be added after s
 2. Set the redirect URI to `http://localhost:3000/auth/callback`.
 3. Set the initiate login URI to `http://localhost:3000/auth/sign-in`.
 4. Set the default sign-out URI to `http://localhost:3000`.
-5. Add the application's client ID to `.env.local` as `WORKOS_CLIENT_ID`.
+5. Add the application's client ID and server API key to `.env.local` as `WORKOS_CLIENT_ID` and `WORKOS_API_KEY`.
 6. Generate a cookie password with `openssl rand -base64 32` and put it in `.env.local` as `WORKOS_COOKIE_PASSWORD`.
-7. Create an organization, invite your user, and sign in with that organization's context to access `/dashboard`.
+7. Add the application database URL, run `npm run db:migrate`, and restart the development server.
+8. Create an organization, assign your user a WorkOS organization role with slug `admin` or `organization_admin`, then set `BOOTSTRAP_WORKOS_USER_ID` and `BOOTSTRAP_WORKOS_ORGANIZATION_ID` in `.env.local` and run `npm run workos:bootstrap-admin`.
 
-`NEXT_PUBLIC_WORKOS_REDIRECT_URI` must match the callback URL in WorkOS. Client ID, cookie password, and redirect URI are required. `WORKOS_API_KEY` is optional for the current sign-in flow; future server-side organization management will need it. Keep real credentials in `.env.local`, which Git ignores. Configure these values before building for production, including the production callback URL.
+`NEXT_PUBLIC_WORKOS_REDIRECT_URI` must match the callback URL in WorkOS. Client ID, server API key, cookie password, redirect URI, and application database URL are required for staff access. Keep real credentials in `.env.local`, which Git ignores. Configure these values before building for production, including the production callback URL.
 
-A signed-in user without organization context is sent to `/workspace-required`. The schema includes local organization and membership records; provisioning, WorkOS synchronization, organization switching, and office permission services remain planned. `requireOrganization()` returns the verified `workosOrganizationId`. Resolve that provider ID to the local organization UUID before querying tenant records. Tenant and office relationships must also be enforced in the database.
+After choosing a public HTTPS host, configure a WorkOS webhook for `organization_membership.created`, `organization_membership.updated`, and `organization_membership.deleted` at `/api/webhooks/workos`. Save its signing secret as `WORKOS_WEBHOOK_SECRET`; the endpoint verifies signatures and reconciles current provider state before committing event IDs.
+
+A signed-in user without organization context is sent to `/workspace-required`. Every protected organization request now fetches the user, organization, and active membership from WorkOS and transactionally upserts their local projections. It fails closed when the provider or database is unavailable. The bootstrap command verifies the WorkOS membership and administrator role before granting the first local organization admin; normal login never promotes a user. Organization switching, webhook delivery, and office permission services remain in progress.
 
 Authentication wiring requires a real WorkOS environment for an end-to-end sign-in check. A successful build alone does not verify an external sign-in flow.
 
@@ -64,7 +67,7 @@ npm run test:db
 npm run test:e2e
 ```
 
-The first migration creates users, organizations, memberships, offices, rooms, office access records, and room assignments. Business records share the database and are scoped by the local organization UUID. See [database setup and constraints](docs/database.md).
+The foundation migration creates users, organizations, memberships, offices, rooms, office access records, and room assignments. The next migration adds processed WorkOS webhook event IDs for idempotent delivery. Business records share the database and are scoped by the local organization UUID. See [database setup and constraints](docs/database.md).
 
 See [Neon's pricing](https://neon.com/pricing) for current free-plan allowances.
 
@@ -79,6 +82,7 @@ See [Neon's pricing](https://neon.com/pricing) for current free-plan allowances.
 | `npm run db:migrate:test` | Migrate only the isolated test database. |
 | `npm run test:db` | Run PostgreSQL integration tests against that database. |
 | `npm run test:e2e` | Run Chromium browser acceptance tests against the production build. |
+| `npm run workos:bootstrap-admin` | Verify an existing WorkOS administrator and grant the first local tenant admin. |
 | `npm start`     | Run the production build.  |
 
 The scoped `minimatch` override keeps the ESLint parser dependency on a patched release while its upstream range remains on version 10. The scoped `esbuild` override patches the legacy loader used by Drizzle Kit. Both apply to development tooling.

@@ -1,6 +1,6 @@
 # C01 — WorkOS identity and tenant onboarding
 
-Status: Open. Dependencies: C00.
+Status: In progress. Dependencies: C00.
 
 ## User outcome
 
@@ -35,7 +35,7 @@ Label tests `C01-AC1`, `C01-AC2`, etc., matching the numbered criteria below. Sh
 
 ## Boundaries and dependencies
 
-Requires Office Management server API credentials and a webhook signing secret/endpoint. No billing, SSO configuration UI, or automatic admin promotion.
+Requires Office Management server API credentials and a webhook signing secret. WorkOS webhooks are configured after a public HTTPS host exists; localhost callbacks alone cannot receive events. No billing, SSO configuration UI, or automatic admin promotion.
 
 ## Completion record
 
@@ -47,6 +47,9 @@ Requires Office Management server API credentials and a webhook signing secret/e
 
 | Criterion | Test/check path | Red failure or live-check prerequisite | Green result | Commit/evidence |
 | --- | --- | --- | --- | --- |
-| Pending | — | — | — | — |
+| Session identity projection | `tests/unit/identity-projection.test.js`, `tests/unit/workos-identity-provider.test.js` | Missing module first; role spoof, mismatched IDs, inactive memberships, and provider failures exercised as red cases | Projection keeps provider roles out of local privilege and provider errors are sanitized | Local unit red/green; actual WorkOS API key missing |
+| Local identity sync | `tests/unit/identity-sync.test.js`, `tests/identity-database.test.js` | Missing service first; database test uses TEST_DATABASE_URL and a rolled-back outer transaction | Unit service tests pass; fresh PostgreSQL integration awaits corrected CI run | No application database was used for tests |
+| First organization admin | `tests/unit/identity-bootstrap.test.js`, `scripts/bootstrap-admin.js` | Missing service first; a member without a provider admin role and a second admin are rejected | Unit checks pass; same verified admin is retry-safe | Local unit red/green; live WorkOS role mapping remains to confirm |
+| Signed membership webhooks | `tests/unit/identity-webhook.test.js`, `src/app/api/webhooks/workos/route.js` | Missing processor first; duplicate, stale delete, invalid payload, and provider outage cases fail before implementation | SDK signature adapter and atomic event/idempotency service are implemented; database regression awaits CI | WorkOS webhook secret and public endpoint remain unset |
 
 Do not mark complete based on a UI screenshot, a build alone, or mocked provider success alone.

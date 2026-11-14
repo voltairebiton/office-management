@@ -1,6 +1,7 @@
 name: Continuous integration
 
 on:
+  workflow_dispatch:
   pull_request:
   push:
     branches: [main]
@@ -30,8 +31,6 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-    env:
-      TEST_DATABASE_URL: postgresql://office_test:test_only_password@localhost:${{ job.services.postgres.ports[5432] }}/office_test
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-node@v7
@@ -41,10 +40,14 @@ jobs:
       - run: npm ci
       - name: Apply migrations to the isolated CI database
         run: npm run db:migrate:test
+        env:
+          TEST_DATABASE_URL: postgresql://office_test:test_only_password@localhost:${{ job.services.postgres.ports[5432] }}/office_test
       - name: Run unit tests
         run: npm test
       - name: Run database integration tests
         run: npm run test:db
+        env:
+          TEST_DATABASE_URL: postgresql://office_test:test_only_password@localhost:${{ job.services.postgres.ports[5432] }}/office_test
       - name: Run lint
         run: npm run lint
       - name: Build production application

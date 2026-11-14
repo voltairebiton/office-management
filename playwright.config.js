@@ -29,7 +29,9 @@ export default defineConfig({
       WORKOS_CLIENT_ID: "",
       WORKOS_COOKIE_PASSWORD: "",
       WORKOS_API_KEY: "",
+      WORKOS_WEBHOOK_SECRET: "",
       NEXT_PUBLIC_WORKOS_REDIRECT_URI: "",
+      DATABASE_URL: "",
     },
   },
 });
