@@ -18,7 +18,7 @@ This follows the previously agreed minimum. Visitor management, QR refreshment o
 | WorkOS configuration | Office Management staging app has localhost:3107 callback and sign-out URLs; client ID, cookie secret, and callback configured; server API key and webhook secret still missing |
 | Database | Dedicated Neon project; Drizzle migrations for identity, offices/rooms/assignments, idempotent WorkOS webhook IDs, and immutable audit history |
 | Integrity tests | Fresh PostgreSQL migrations and identity, authorization, audit, office/room, and multi-connection suites pass in CI. C04 services and the separate-connection assignment race are now included in the pipeline. |
-| Operational features | C01 identity projection and C02 tenant/office authorization are implemented; live WorkOS acceptance remains. C03 office/room CRUD is PostgreSQL verified; its authenticated browser journey remains. C04 people, office access, and room assignments now pass PostgreSQL history, scope, and concurrency checks. Inventory tables and stock operations remain. |
+| Operational features | C01 identity projection and C02 tenant/office authorization are implemented; live WorkOS acceptance remains. C03 office/room CRUD is PostgreSQL verified; its authenticated browser journey remains. C04 people, office access, and room assignments pass PostgreSQL history, scope, and concurrency checks. C05 catalog and stock-location schema/services/UI are implemented locally; quantity ledger and stock operations remain. |
 | Automation | C00 local unit/lint/build/E2E gates and fresh-PostgreSQL CI pass. Latest green baseline: [CI run 43615559521](https://github.com/voltairebiton/office-management/actions/runs/43615559521). Local database integration requires an isolated `TEST_DATABASE_URL`, which is not configured on this machine. |
 
 The public preview is never an authenticated acceptance environment. A successful build does not establish tenant isolation or complete sign-in. Existing work was not documented as test-first; TDD evidence starts with the contracts below.
@@ -47,7 +47,7 @@ Contract status reflects the evidence recorded below. “Implemented” does not
 | [C02](contracts/C02-authorization.md) | Tenant context, office permissions, access lifecycle | C01 | Implemented and PostgreSQL verified; authenticated browser/live WorkOS checks remain |
 | [C03](contracts/C03-offices-rooms.md) | Office and room management | C02 | Implemented and PostgreSQL verified; authenticated browser acceptance remains |
 | [C04](contracts/C04-people-assignments.md) | Staff directory, office access, room assignments | C02, C03 | Services and role-specific UI implemented; PostgreSQL acceptance and two-connection race pass; live WorkOS browser validation remains |
-| [C05](contracts/C05-catalog-locations.md) | Item catalog and stock locations | C02, C03 | Open |
+| [C05](contracts/C05-catalog-locations.md) | Item catalog and stock locations | C02, C03 | Implementation and local gates pass; fresh-database acceptance pending CI |
 | [C06](contracts/C06-ledger-receipts.md) | Atomic ledger, balances, stock receipts | C05 | Open |
 | [C07](contracts/C07-transfers.md) | Room deployment and returns | C06 | Open |
 | [C08](contracts/C08-stock-corrections.md) | Consumption, damage, and counted-stock corrections | C06 | Open |

@@ -19,6 +19,15 @@ import {
   grantOfficeAccess,
   revokeOfficeAccess,
 } from "@/lib/people-service";
+import {
+  archiveItem,
+  archiveLocation,
+  createCatalogItem,
+  createStorageLocation,
+  ensureRoomLocation,
+  updateCatalogItem,
+  updateStorageLocation,
+} from "@/lib/catalog-service";
 
 function value(formData, field) {
   const entry = formData.get(field);
@@ -55,6 +64,22 @@ function roomInput(formData) {
     name: value(formData, "name"),
     code: value(formData, "code"),
     capacity: capacity === "" ? null : /^\d+$/.test(capacity) ? Number(capacity) : capacity,
+  };
+}
+
+function catalogItemInput(formData) {
+  return {
+    sku: value(formData, "sku"),
+    name: value(formData, "name"),
+    category: value(formData, "category"),
+    unit: value(formData, "unit"),
+  };
+}
+
+function storageLocationInput(formData) {
+  return {
+    code: value(formData, "code"),
+    name: value(formData, "name"),
   };
 }
 
@@ -175,6 +200,86 @@ export async function saveRoomAssignmentAction(previousState, formData) {
     }
     revalidatePath("/dashboard");
     return { ok: true, message: roomId ? "Room assignment saved." : "Room assignment ended." };
+  } catch (error) {
+    return actionError(error);
+  }
+}
+
+export async function saveCatalogItemAction(previousState, formData) {
+  const { authorization } = await requireOrganization();
+  const itemId = value(formData, "itemId");
+  try {
+    if (itemId) {
+      await updateCatalogItem(authorization, itemId, catalogItemInput(formData), value(formData, "expectedUpdatedAt"));
+    } else {
+      await createCatalogItem(authorization, catalogItemInput(formData));
+    }
+    revalidatePath("/dashboard");
+    return { ok: true, message: itemId ? "Catalog item updated." : "Catalog item created." };
+  } catch (error) {
+    return actionError(error);
+  }
+}
+
+export async function archiveCatalogItemAction(previousState, formData) {
+  const { authorization } = await requireOrganization();
+  try {
+    await archiveItem(authorization, value(formData, "itemId"));
+    revalidatePath("/dashboard");
+    return { ok: true, message: "Catalog item archived." };
+  } catch (error) {
+    return actionError(error);
+  }
+}
+
+export async function saveStorageLocationAction(previousState, formData) {
+  const { authorization } = await requireOrganization();
+  const officeId = value(formData, "officeId");
+  const locationId = value(formData, "locationId");
+  try {
+    if (locationId) {
+      await updateStorageLocation(
+        authorization,
+        officeId,
+        locationId,
+        storageLocationInput(formData),
+        value(formData, "expectedUpdatedAt"),
+      );
+    } else {
+      await createStorageLocation(authorization, officeId, storageLocationInput(formData));
+    }
+    revalidatePath("/dashboard");
+    return { ok: true, message: locationId ? "Stock location updated." : "Storage location created." };
+  } catch (error) {
+    return actionError(error);
+  }
+}
+
+export async function archiveStockLocationAction(previousState, formData) {
+  const { authorization } = await requireOrganization();
+  try {
+    await archiveLocation(
+      authorization,
+      value(formData, "officeId"),
+      value(formData, "locationId"),
+    );
+    revalidatePath("/dashboard");
+    return { ok: true, message: "Stock location archived." };
+  } catch (error) {
+    return actionError(error);
+  }
+}
+
+export async function ensureRoomStockLocationAction(previousState, formData) {
+  const { authorization } = await requireOrganization();
+  try {
+    await ensureRoomLocation(
+      authorization,
+      value(formData, "officeId"),
+      value(formData, "roomId"),
+    );
+    revalidatePath("/dashboard");
+    return { ok: true, message: "Room stock location is ready." };
   } catch (error) {
     return actionError(error);
   }

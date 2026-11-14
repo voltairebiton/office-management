@@ -10,7 +10,7 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "node scripts/migrate-db.js",
     "db:check": "node scripts/check-db.js",
-    "test:db": "node --conditions=react-server --test tests/database.test.js tests/identity-database.test.js tests/authorization-database.test.js tests/connections-database.test.js tests/audit-database.test.js tests/offices-database.test.js tests/people-database.test.js",
+    "test:db": "node --conditions=react-server --test tests/database.test.js tests/identity-database.test.js tests/authorization-database.test.js tests/connections-database.test.js tests/audit-database.test.js tests/offices-database.test.js tests/people-database.test.js tests/catalog-database.test.js",
     "test": "node --conditions=react-server --test tests/unit/*.test.js",
     "db:migrate:test": "node scripts/migrate-test-db.js",
     "test:e2e": "playwright test",

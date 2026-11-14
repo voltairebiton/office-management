@@ -42,6 +42,7 @@ test("C02-AC1 authorization context", async (t) => {
     const context = makeContext("organization_admin");
     assert.equal(hasCapability(context, "offices:manage"), true);
     assert.equal(hasCapability(context, "inventory:manage"), true);
+    assert.equal(hasCapability(context, "catalog:manage"), true);
     assert.deepEqual(context.officeIds, ["office-a", "office-b"]);
   });
 
@@ -49,6 +50,7 @@ test("C02-AC1 authorization context", async (t) => {
     const context = makeContext("office_manager");
     assert.equal(hasCapability(context, "rooms:manage"), true);
     assert.equal(hasCapability(context, "inventory:manage"), true);
+    assert.equal(hasCapability(context, "catalog:manage"), false);
     assert.equal(hasCapability(context, "members:manage"), false);
     assert.equal(hasCapability(context, "office-access:manage"), false);
     assert.deepEqual(context.officeIds, ["office-a"]);

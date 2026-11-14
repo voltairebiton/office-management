@@ -685,6 +685,33 @@ code {
 .pm-own-assignment { display: flex; align-items: center; gap: 13px; padding: 16px; }
 .pm-own-assignment h3 { margin: 0; font-size: 13px; }
 .pm-own-assignment p { margin: 5px 0 0; color: var(--ws-muted); font-size: 11px; }
+.pm-catalog-body { display: grid; gap: 15px; padding: 15px 19px 19px; }
+.pm-catalog-list { display: grid; gap: 10px; }
+.pm-catalog-card { min-width: 0; border: 1px solid #e1e7df; border-radius: 7px; background: #fff; overflow: hidden; }
+.pm-catalog-card-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 14px 16px; }
+.pm-catalog-card-heading h3 { margin: 0; font-size: 12px; font-weight: 600; }
+.pm-catalog-card-heading p { margin: 5px 0 0; color: var(--ws-muted); font-size: 10px; text-transform: capitalize; }
+.pm-catalog-card .om-form { border-top: 1px solid #edf0eb; padding: 13px 16px 15px; }
+.pm-catalog-card .om-form-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.pm-catalog-card .om-field select { width: 100%; min-height: 36px; border: 1px solid #dce4dc; border-radius: 5px; padding: 0 9px; background: #fff; color: var(--ws-text); font-size: 12px; font-weight: 400; }
+.pm-catalog-actions { display: flex; justify-content: flex-end; border-top: 1px solid #edf0eb; padding: 10px 16px; }
+.pm-inline-form { display: flex; align-items: center; flex-wrap: wrap; gap: 9px; }
+.pm-inline-form .om-danger { min-height: 30px; padding-inline: 10px; font-size: 10px; }
+.pm-inline-form .om-feedback { font-size: 10px; }
+.pm-create-panel { border-top: 1px solid #edf0eb; padding-top: 15px; }
+.pm-create-panel h4 { margin: 0; padding: 0 19px 11px; font-size: 12px; font-weight: 600; }
+.pm-create-panel > .om-form { padding: 0 19px 4px; }
+.pm-create-panel > .pm-muted { margin: -5px 19px 11px; }
+.pm-selected-office { margin: -7px 0 0; color: var(--ws-muted); font-size: 10px; }
+.pm-room-location-list { display: grid; gap: 8px; padding: 0 19px; }
+.pm-room-location-form { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; padding: 11px 12px; border: 1px solid #e1e7df; border-radius: 6px; }
+.pm-room-location-form > span { display: grid; gap: 4px; margin-right: auto; }
+.pm-room-location-form strong { font-size: 11px; }
+.pm-room-location-form small { color: var(--ws-muted); font-size: 9px; }
+.pm-room-location-form .om-primary { min-height: 31px; font-size: 10px; }
+.pm-room-location-form .om-feedback { flex-basis: 100%; }
+.pm-info-notice { margin: 0; padding: 13px 16px; }
+.pm-info-notice p { margin: 5px 0 0; font-size: 10px; }
 .pm-sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
 .pm-workspace :is(button, input, select, a):focus-visible { outline: 3px solid #8ab2a1; outline-offset: 2px; }
 @media (max-width: 650px) {
@@ -694,6 +721,12 @@ code {
   .pm-office-picker form { flex-wrap: wrap; }
   .pm-assignment-label { align-items: flex-start; flex-direction: column; gap: 4px; }
   .pm-assignment-label small { text-align: left; }
+  .pm-catalog-body { padding-inline: 14px; }
+  .pm-catalog-card .om-form-grid { grid-template-columns: 1fr; }
+  .pm-catalog-card-heading { align-items: flex-start; }
+  .pm-room-location-form { align-items: flex-start; }
+  .pm-create-panel h4 { padding-inline: 14px; }
+  .pm-create-panel > .om-form, .pm-room-location-list { padding-inline: 14px; }
 }
 
 .om-workspace { display: grid; gap: 18px; }

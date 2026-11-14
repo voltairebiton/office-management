@@ -4,6 +4,7 @@ const capabilitiesByRole = Object.freeze({
     "members:read",
     "members:manage",
     "office-access:manage",
+    "catalog:manage",
     "offices:read",
     "offices:manage",
     "rooms:manage",

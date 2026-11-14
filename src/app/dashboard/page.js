@@ -4,6 +4,7 @@ import { WorkspaceDashboard } from "@/components/workspace-dashboard";
 import { resolveView } from "@/lib/workspace-navigation";
 import { OfficeWorkspace } from "@/components/office-workspace";
 import { PeopleWorkspace } from "@/components/people-workspace";
+import { CatalogWorkspace } from "@/components/catalog-workspace";
 
 export const metadata = { title: "Workspace" };
 
@@ -17,5 +18,8 @@ export default async function DashboardPage({ searchParams }) {
   const peopleContent = view === "people"
     ? <PeopleWorkspace context={authorization} searchParams={params} />
     : null;
-  return <WorkspaceDashboard view={view} officeContent={officeContent} peopleContent={peopleContent} account={{ name: [user.firstName, user.lastName].filter(Boolean).join(" ") || "Team member", email: user.email, role: role || "Member" }} signOutAction={signOutAction} />;
+  const inventoryContent = view === "inventory"
+    ? <CatalogWorkspace context={authorization} searchParams={params} />
+    : null;
+  return <WorkspaceDashboard view={view} officeContent={officeContent} peopleContent={peopleContent} inventoryContent={inventoryContent} account={{ name: [user.firstName, user.lastName].filter(Boolean).join(" ") || "Team member", email: user.email, role: role || "Member" }} signOutAction={signOutAction} />;
 }
