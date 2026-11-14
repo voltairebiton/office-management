@@ -1,6 +1,6 @@
 # C08 — Consumption, damage, and stock-count corrections
 
-Status: Open. Dependencies: C06.
+Status: Implementation in progress; awaiting PostgreSQL CI. Dependencies: C06.
 
 ## User outcome
 
@@ -45,6 +45,9 @@ No automatic recipe/order deduction, approval chains, financial valuation, or sc
 
 | Criterion | Test/check path | Red failure or live-check prerequisite | Green result | Commit/evidence |
 | --- | --- | --- | --- | --- |
-| Pending | — | — | — | — |
+| AC1–AC3 | tests/unit/adjustment-validation.test.js; tests/adjustments-database.test.js | Unit acceptance tests failed against the initial service/normalizer stubs; blank reason, reusable consumption, and stale count version are rejected. | Validation tests pass; database assertions are queued for the next CI run. | Working tree; CI pending |
+| AC2–AC5 | tests/adjustments-database.test.js | Fresh PostgreSQL run required; local isolated TEST_DATABASE_URL is not configured. | Service serializes stock writes by office, checks nonnegative quantity and observed count version, and rolls back injected failures. | Working tree; CI pending |
+| AC4, AC6 | tests/unit/adjustment-draft.test.js; tests/adjustments-database.test.js | Pending-draft tests failed against the initial inert persistence helper. | Retry key and count version survive reload; zero-delta count stores a transaction snapshot and audit event without a movement; reversal links a new movement to immutable history. | Working tree; CI pending |
+| UI | src/components/catalog-workspace.js; src/components/catalog-forms.js | Live WorkOS browser journey requires valid staging credentials and a signed-in organization user. | Forms support consumption, damage, count version capture, reason/reference, pending retry, and movement IDs for reversal references. | Build and browser smoke pending |
 
-Do not mark complete based on a UI screenshot, a build alone, or mocked provider success alone.
+Do not mark complete based on a UI screenshot, a build alone, or mocked provider success alone. Update this record with the commit and CI run after PostgreSQL acceptance, and keep authenticated UI acceptance open until a real WorkOS journey is available.

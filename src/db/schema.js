@@ -385,6 +385,9 @@ export const stockTransactions = pgTable(
     payloadHash: text("payload_hash").notNull(),
     reason: text("reason").notNull(),
     reference: text("reference"),
+    quantityBefore: integer("quantity_before"),
+    quantityAfter: integer("quantity_after"),
+    balanceVersion: integer("balance_version"),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   },
   (table) => [
@@ -397,7 +400,12 @@ export const stockTransactions = pgTable(
     }),
     check("stock_transactions_payload_hash_format", sql`${table.payloadHash} ~ '^[a-f0-9]{64}$'`),
     check("stock_transactions_reason_not_empty", sql`length(btrim(${table.reason})) > 0`),
+    check("stock_transactions_reason_max_length", sql`length(${table.reason}) <= 120`),
     check("stock_transactions_reference_max_length", sql`${table.reference} is null or length(${table.reference}) <= 120`),
+    check("stock_transactions_count_snapshot", sql`(${table.operation} = 'count_correction' and ${table.quantityBefore} is not null and ${table.quantityAfter} is not null and ${table.balanceVersion} is not null) or (${table.operation} <> 'count_correction' and ${table.quantityBefore} is null and ${table.quantityAfter} is null and ${table.balanceVersion} is null)`),
+    check("stock_transactions_count_values_nonnegative", sql`${table.quantityBefore} is null or ${table.quantityBefore} >= 0`),
+    check("stock_transactions_count_after_nonnegative", sql`${table.quantityAfter} is null or ${table.quantityAfter} >= 0`),
+    check("stock_transactions_count_version_nonnegative", sql`${table.balanceVersion} is null or ${table.balanceVersion} >= 0`),
   ],
 );
 
@@ -443,6 +451,7 @@ export const stockMovements = pgTable(
     actorMembershipId: uuid("actor_membership_id").notNull(),
     locationId: uuid("location_id").notNull(),
     itemId: uuid("item_id").notNull(),
+    reversalOfMovementId: uuid("reversal_of_movement_id"),
     movementType: stockMovementType("movement_type").notNull(),
     quantityDelta: integer("quantity_delta").notNull(),
     balanceAfter: integer("balance_after").notNull(),
@@ -460,6 +469,11 @@ export const stockMovements = pgTable(
       name: "stock_movements_transaction_fk",
       columns: [table.organizationId, table.transactionId],
       foreignColumns: [stockTransactions.organizationId, stockTransactions.id],
+    }),
+    foreignKey({
+      name: "stock_movements_reversal_fk",
+      columns: [table.organizationId, table.reversalOfMovementId],
+      foreignColumns: [table.organizationId, table.id],
     }),
     foreignKey({
       name: "stock_movements_actor_membership_fk",

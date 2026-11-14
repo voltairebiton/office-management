@@ -7,6 +7,7 @@ import {
   EnsureRoomLocationForm,
   ReceiveStockForm,
   StorageLocationForm,
+  StockAdjustmentForm,
   TransferStockForm,
 } from "@/components/catalog-forms";
 import { hasCapability } from "@/lib/authorization";
@@ -54,7 +55,7 @@ function StockMovements({ result, officeId, timezone = "UTC" }) {
       <thead><tr><th>When</th><th>Movement</th><th>Item / location</th><th>Change</th><th>Reason / reference</th></tr></thead>
       <tbody>{result.rows.map((row) => <tr key={row.id}>
         <td>{formatDate(row.createdAt)}</td>
-        <td>{row.movementType.replaceAll("_", " ")}</td>
+        <td>{row.movementType.replaceAll("_", " ")}<small>Movement ID: <code>{row.id}</code></small>{row.reversalOfMovementId && <small>Reverses: <code>{row.reversalOfMovementId}</code></small>}</td>
         <td><strong>{row.itemName}</strong><small>{row.itemSku} · {row.locationCode}</small></td>
         <td className={row.quantityDelta > 0 ? "pm-stock-positive" : "pm-stock-negative"}>{row.quantityDelta > 0 ? "+" : ""}{row.quantityDelta} {row.itemUnit}<small>Balance {row.balanceAfter}</small></td>
         <td>{row.reason}{row.reference && <small>{row.reference}</small>}</td>
@@ -158,13 +159,14 @@ export async function CatalogWorkspace({ context, searchParams = {} }) {
   let roomLocations = { rows: [] };
   let rooms = { rows: [], total: 0 };
   let balances = { rows: [], total: 0, page: 1, pageSize: 20, totalPages: 0 };
+  let adjustmentBalances = { rows: [], total: 0 };
   let movements = { rows: [], total: 0, page: 1, pageSize: 20, totalPages: 0 };
   let receiptItems = { rows: [], total: 0 };
   let receiptLocations = { rows: [], total: 0 };
   let transferLocations = { rows: [], total: 0 };
   if (officeId) {
     try {
-      [locations, rooms, balances, movements, receiptItems, receiptLocations, transferLocations] = await Promise.all([
+      [locations, rooms, balances, adjustmentBalances, movements, receiptItems, receiptLocations, transferLocations] = await Promise.all([
         listStockLocations(context, officeId, {
           q: searchParams.locQ ?? "",
           status: searchParams.locStatus ?? "active",
@@ -173,6 +175,7 @@ export async function CatalogWorkspace({ context, searchParams = {} }) {
         }),
         listRooms(context, officeId, { status: "active", page: 1, pageSize: 50 }),
         listStockBalances(context, officeId, { page: searchParams.balancePage ?? 1, pageSize: 20 }),
+        listStockBalances(context, officeId, { page: searchParams.adjustmentPage ?? 1, pageSize: 50 }),
         listStockMovements(context, officeId, { page: searchParams.movementPage ?? 1, pageSize: 20 }),
         listCatalogItems(context, { status: "active", page: 1, pageSize: 50 }),
         listStockLocations(context, officeId, { status: "active", kind: "storage", page: 1, pageSize: 50 }),
@@ -215,6 +218,14 @@ export async function CatalogWorkspace({ context, searchParams = {} }) {
       {canManageLocations ? <TransferStockForm key={officeId} officeId={officeId} locations={transferLocations.rows} items={receiptItems.rows} initialRequestKey={randomUUID()} />
         : <EmptyPanel title="Movement access required" message="Your role can view stock but cannot deploy, return, or transfer it." />}
       {(receiptItems.total > receiptItems.rows.length || transferLocations.total > transferLocations.rows.length) && <p className="pm-muted pm-selector-note">The movement selectors show the first 50 active items and locations.</p>}
+    </section>}
+
+    {office && <section className="om-subpanel">
+      <div className="om-subpanel-heading"><div><h3>Consumption, damage, and physical counts</h3><p>Record reasoned changes against the current location balance. Counts save the version observed here and ask you to recount if stock changes first.</p></div></div>
+      {canManageLocations ? <StockAdjustmentForm key={officeId} officeId={officeId} locations={transferLocations.rows} items={receiptItems.rows} balances={adjustmentBalances.rows} balancesComplete={adjustmentBalances.total <= adjustmentBalances.rows.length} canCorrect={hasCapability(context, "stock:correct")} initialRequestKey={randomUUID()} />
+        : <EmptyPanel title="Adjustment access required" message="Your role can view stock but cannot record consumption, damage, or count corrections." />}
+      <Pagination result={adjustmentBalances} query={{ office: officeId }} pageKey="adjustmentPage" label="Countable balances" />
+      {adjustmentBalances.total > adjustmentBalances.rows.length && <p className="pm-muted pm-selector-note">Count versions use the selected 50-balance page. Movement IDs are shown in history so a correction can reference any prior entry.</p>}
     </section>}
 
     {office && <section className="om-subpanel">

@@ -31,6 +31,7 @@ import {
 } from "@/lib/catalog-service";
 import { receiveStock } from "@/lib/stock-service";
 import { transferStock } from "@/lib/transfer-service";
+import { adjustStock as recordStockAdjustment } from "@/lib/adjustment-service";
 
 function value(formData, field) {
   const entry = formData.get(field);
@@ -333,6 +334,37 @@ export async function transferStockAction(previousState, formData) {
     return {
       ok: true,
       message: `${result.outgoing.quantityDelta * -1} ${unit} of ${name} ${verb}. Source balance: ${result.sourceBalanceAfter}; destination balance: ${result.destinationBalanceAfter}.`,
+      transactionId: result.transactionId,
+      nextRequestKey: randomUUID(),
+    };
+  } catch (error) {
+    return actionError(error);
+  }
+}
+
+export async function adjustStockAction(previousState, formData) {
+  const { authorization } = await requireOrganization();
+  try {
+    const result = await recordStockAdjustment(authorization, {
+      officeId: value(formData, "officeId"),
+      locationId: value(formData, "locationId"),
+      itemId: value(formData, "itemId"),
+      requestKey: value(formData, "requestKey"),
+      operation: value(formData, "operation"),
+      quantity: value(formData, "quantity"),
+      countedQuantity: value(formData, "countedQuantity"),
+      expectedVersion: value(formData, "expectedVersion"),
+      reason: value(formData, "reason"),
+      reference: value(formData, "reference"),
+      reversalOfMovementId: value(formData, "reversalOfMovementId"),
+    });
+    revalidatePath("/dashboard");
+    const message = result.quantityDelta === 0
+      ? `Physical count confirmed at ${result.quantityAfter}; no stock movement was needed.`
+      : `${Math.abs(result.quantityDelta)} ${result.movement.itemUnit} ${result.quantityDelta < 0 ? "removed" : "added"}. New balance: ${result.quantityAfter}.`;
+    return {
+      ok: true,
+      message,
       transactionId: result.transactionId,
       nextRequestKey: randomUUID(),
     };

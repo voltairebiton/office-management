@@ -1,0 +1,9 @@
+ALTER TABLE "stock_movements" ADD COLUMN "reversal_of_movement_id" uuid;--> statement-breakpoint
+ALTER TABLE "stock_transactions" ADD COLUMN "quantity_before" integer;--> statement-breakpoint
+ALTER TABLE "stock_transactions" ADD COLUMN "quantity_after" integer;--> statement-breakpoint
+ALTER TABLE "stock_transactions" ADD COLUMN "balance_version" integer;--> statement-breakpoint
+ALTER TABLE "stock_movements" ADD CONSTRAINT "stock_movements_reversal_fk" FOREIGN KEY ("organization_id","reversal_of_movement_id") REFERENCES "public"."stock_movements"("organization_id","id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "stock_transactions" ADD CONSTRAINT "stock_transactions_count_snapshot" CHECK (("stock_transactions"."operation" = 'count_correction' and "stock_transactions"."quantity_before" is not null and "stock_transactions"."quantity_after" is not null and "stock_transactions"."balance_version" is not null) or ("stock_transactions"."operation" <> 'count_correction' and "stock_transactions"."quantity_before" is null and "stock_transactions"."quantity_after" is null and "stock_transactions"."balance_version" is null));--> statement-breakpoint
+ALTER TABLE "stock_transactions" ADD CONSTRAINT "stock_transactions_count_values_nonnegative" CHECK ("stock_transactions"."quantity_before" is null or "stock_transactions"."quantity_before" >= 0);--> statement-breakpoint
+ALTER TABLE "stock_transactions" ADD CONSTRAINT "stock_transactions_count_after_nonnegative" CHECK ("stock_transactions"."quantity_after" is null or "stock_transactions"."quantity_after" >= 0);--> statement-breakpoint
+ALTER TABLE "stock_transactions" ADD CONSTRAINT "stock_transactions_count_version_nonnegative" CHECK ("stock_transactions"."balance_version" is null or "stock_transactions"."balance_version" >= 0);

@@ -1,0 +1,1 @@
+ALTER TABLE "stock_transactions" ADD CONSTRAINT "stock_transactions_reason_max_length" CHECK (length("stock_transactions"."reason") <= 120);

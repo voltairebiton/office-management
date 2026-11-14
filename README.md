@@ -8,14 +8,14 @@ A personal, MIT-licensed office management project built with Next.js and JavaSc
 - Public home page, administrator setup page, and responsive staff dashboard with grouped sidebar navigation.
 - WorkOS AuthKit sign-in, callback, sign-out, and session integration.
 - Server helpers requiring a signed-in user and an active organization context.
-- Neon PostgreSQL connection, Drizzle ORM, and a versioned migration for seven foundation tables.
-- Live database constraint tests that roll back their fixtures.
+- Neon PostgreSQL connection, Drizzle ORM, and versioned migrations for identity, offices, people, inventory, and immutable stock history.
+- PostgreSQL integration coverage for tenant and office scope, room assignments, catalog, receipts, deployments, returns, and stock corrections.
 - Office filters, searchable sample lists, mobile navigation, and explicit planned states for future office modules.
 - Public `/preview` design preview with clearly labelled fictional data; no database access or mutations.
 
 The app runs without credentials so contributors can view the starter. Staff pages redirect to setup until authentication is configured. There is no authentication bypass or demo staff account.
 
-The database foundation and initial WorkOS identity reconciliation are implemented. Office CRUD, office-level permissions, visitor management, inventory, QR ordering, and notifications remain planned. Real WorkOS sign-in, API access, webhook delivery, and first-admin bootstrap still need staging credentials and acceptance. The separate `/preview` route demonstrates the intended interface using fictional records. See [interface design and scope](docs/design.md).
+Organization identity, office and room management, staff access and room assignments, the catalog, stock receipts, office-local deployments and returns, and reasoned consumption/damage/count corrections are implemented. Their PostgreSQL acceptance suites run in CI; contracts also track the remaining live authenticated browser acceptance. Visitor management, desk and visitor QR ordering, office-helper queues/notifications, and release hosting remain future MVP work. Real WorkOS sign-in, server API access, webhook delivery, and first-admin bootstrap still need staging credentials and acceptance. The separate `/preview` route demonstrates the interface using fictional records. See [interface design and scope](docs/design.md).
 
 ## MVP execution plan
 
