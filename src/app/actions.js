@@ -13,6 +13,12 @@ import {
   updateOffice,
   updateRoom,
 } from "@/lib/office-service";
+import {
+  assignMemberToRoom,
+  endRoomAssignment,
+  grantOfficeAccess,
+  revokeOfficeAccess,
+} from "@/lib/people-service";
 
 function value(formData, field) {
   const entry = formData.get(field);
@@ -113,6 +119,62 @@ export async function archiveRoomAction(previousState, formData) {
     );
     revalidatePath("/dashboard");
     return { ok: true, message: "Room archived." };
+  } catch (error) {
+    return actionError(error);
+  }
+}
+
+export async function manageOfficeAccessAction(previousState, formData) {
+  const { authorization } = await requireOrganization();
+  const operation = value(formData, "operation");
+  try {
+    if (operation === "grant") {
+      await grantOfficeAccess(
+        authorization,
+        value(formData, "membershipId"),
+        value(formData, "officeId"),
+      );
+    } else if (operation === "revoke") {
+      await revokeOfficeAccess(
+        authorization,
+        value(formData, "membershipId"),
+        value(formData, "officeId"),
+      );
+    } else {
+      return actionError(Object.assign(new Error("Choose an access change."), { code: "VALIDATION" }));
+    }
+    revalidatePath("/dashboard");
+    return { ok: true, message: operation === "grant" ? "Office access granted." : "Office access removed." };
+  } catch (error) {
+    return actionError(error);
+  }
+}
+
+export async function saveRoomAssignmentAction(previousState, formData) {
+  const { authorization } = await requireOrganization();
+  const officeId = value(formData, "officeId");
+  const membershipId = value(formData, "membershipId");
+  const expectedAssignmentId = value(formData, "expectedAssignmentId") || null;
+  const roomId = value(formData, "roomId");
+  try {
+    if (roomId) {
+      await assignMemberToRoom(
+        authorization,
+        officeId,
+        membershipId,
+        roomId,
+        { expectedAssignmentId },
+      );
+    } else if (expectedAssignmentId) {
+      await endRoomAssignment(
+        authorization,
+        officeId,
+        membershipId,
+        { expectedAssignmentId },
+      );
+    }
+    revalidatePath("/dashboard");
+    return { ok: true, message: roomId ? "Room assignment saved." : "Room assignment ended." };
   } catch (error) {
     return actionError(error);
   }

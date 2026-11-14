@@ -45,7 +45,7 @@ Composite foreign keys alone are insufficient. RLS is optional defense in depth,
 
 | Criterion | Test/check path | Red failure or live-check prerequisite | Green result | Commit/evidence |
 | --- | --- | --- | --- | --- |
-| Capability policy and scoped context | `tests/unit/authorization.test.js`, `tests/authorization-database.test.js` | Missing module first; role escalation, inactive office, foreign tenant, and unassigned office cases | Ten unit assertions pass; PostgreSQL context test awaits CI | Context resolves only local membership and active office rows |
-| Immutable audit trail | `tests/unit/audit.test.js`, `tests/audit-database.test.js`, `src/lib/audit-repository.js` | Missing serializer first; secret fields and invalid actor/resource scopes rejected | Five unit assertions pass; insert/update/delete/truncate database assertions await CI | Migration `0003` adds composite tenant/actor/office FKs and write-protection triggers |
+| Capability policy and scoped context | `tests/unit/authorization.test.js`, `tests/authorization-database.test.js` | Missing module first; role escalation, inactive office, foreign tenant, and unassigned office cases | Unit and PostgreSQL authorization tests pass on the fresh CI database. | [CI run 43613705365](https://github.com/voltairebiton/office-management/actions/runs/43613705365); real signed-in browser checks still depend on WorkOS credentials. |
+| Immutable audit trail | `tests/unit/audit.test.js`, `tests/audit-database.test.js`, `src/lib/audit-repository.js` | Missing serializer first; secret fields and invalid actor/resource scopes rejected | Unit plus insert/update/delete/truncate database assertions pass in CI. | Migration `0003` adds composite tenant/actor/office FKs and write-protection triggers; [CI run 43613705365](https://github.com/voltairebiton/office-management/actions/runs/43613705365). |
 
 Do not mark complete based on a UI screenshot, a build alone, or mocked provider success alone.

@@ -44,8 +44,8 @@ No floor-plan editor, seat map, attendance, or room booking. MVP archive default
 
 | Criterion | Test/check path | Red failure or live-check prerequisite | Green result | Commit/evidence |
 | --- | --- | --- | --- | --- |
-| C03-AC1 | `tests/unit/office-validation.test.js` | Initial run failed because `office-validation.js` did not exist | 9 assertions pass locally for normalization, timezone, malformed values, and pagination | In progress; database CI pending |
-| C03-AC2, C03-AC4–AC7 | `tests/offices-database.test.js`, office workspace forms | Isolated PostgreSQL service run required; authenticated browser flow needs WorkOS server key | Pending | In progress |
-| C03-AC3 | `drizzle/0004_green_cobalt_man.sql` | Migration checks normalized code collisions before applying data changes | Pending fresh-database migration CI | In progress |
+| C03-AC1 | `tests/unit/office-validation.test.js` | Initial run failed because `office-validation.js` did not exist | 9 assertions pass locally for normalization, timezone, malformed values, and pagination | Verified locally and in CI; [run 43613705365](https://github.com/voltairebiton/office-management/actions/runs/43613705365). |
+| C03-AC2, C03-AC4–AC7 | `tests/offices-database.test.js`, office workspace forms | Isolated PostgreSQL service run required; authenticated browser flow needs WorkOS server key | Fresh PostgreSQL acceptance/regression tests pass in CI. Authenticated office create/edit/archive journey remains unverified until WorkOS is configured. | [CI run 43613705365](https://github.com/voltairebiton/office-management/actions/runs/43613705365). |
+| C03-AC3 | `drizzle/0004_green_cobalt_man.sql` | Migration checks normalized code collisions before applying data changes | Fresh-database migration and schema check pass in CI. | [CI run 43613705365](https://github.com/voltairebiton/office-management/actions/runs/43613705365). |
 
 Do not mark complete based on a UI screenshot, a build alone, or mocked provider success alone.

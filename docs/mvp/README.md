@@ -17,9 +17,9 @@ This follows the previously agreed minimum. Visitor management, QR refreshment o
 | Authentication wiring | WorkOS proxy, sign-in/callback/sign-out, fresh provider membership check, transactional local identity projection, and explicit first-admin bootstrap; real organization login still unverified |
 | WorkOS configuration | Office Management staging app has localhost:3107 callback and sign-out URLs; client ID, cookie secret, and callback configured; server API key and webhook secret still missing |
 | Database | Dedicated Neon project; Drizzle migrations for identity, offices/rooms/assignments, idempotent WorkOS webhook IDs, and immutable audit history |
-| Integrity tests | Existing live PostgreSQL suite passes: 12 behavior subtests plus their parent, reported as 13 tests |
-| Operational features | C01 identity projection and C02 tenant/office authorization are implemented. C03 office/room CRUD, scoped search, pagination, audit, stale-edit conflicts, and restrictive archives are in progress. Inventory tables and stock operations remain |
-| Automation | C00 local unit/lint/build/E2E gates pass. A remote PostgreSQL run exposed an audit-test SQLSTATE wrapper assertion; the assertion is fixed and the next run will verify all migrations and database suites together |
+| Integrity tests | Fresh PostgreSQL migrations and identity, authorization, audit, office/room, and multi-connection suites pass in CI. C04 services and the separate-connection assignment race are now included in the pipeline. |
+| Operational features | C01 identity projection and C02 tenant/office authorization are implemented; live WorkOS acceptance remains. C03 office/room CRUD is implemented and PostgreSQL verified; its authenticated browser journey remains. C04 people, office access, and room-assignment UI/services are implemented locally; the new PostgreSQL run is pending. Inventory tables and stock operations remain. |
+| Automation | C00 local unit/lint/build/E2E gates and fresh-PostgreSQL CI pass. Latest green baseline: [CI run 43613705365](https://github.com/voltairebiton/office-management/actions/runs/43613705365). Local database integration requires an isolated `TEST_DATABASE_URL`, which is not configured on this machine. |
 
 The public preview is never an authenticated acceptance environment. A successful build does not establish tenant isolation or complete sign-in. Existing work was not documented as test-first; TDD evidence starts with the contracts below.
 
@@ -30,7 +30,7 @@ The public preview is never an authenticated acceptance environment. A successfu
 | WorkOS server API key missing locally | Real organization/member synchronization and fresh membership checks | Yes: test harness, provider adapter tests, schema/service contracts | Configure the Office Management staging server key privately; never commit it |
 | Real user + organization sign-in not verified | Authentication acceptance and final release | Yes | Complete an actual staging login and verify organization context, role, logout, and revocation |
 | Signed webhook delivery not configured/verified | Automatic WorkOS synchronization acceptance | Yes | Add handler first; then configure staging endpoint and signing secret; validate real delivery |
-| No isolated integration/E2E database or CI yet | Safe concurrency/E2E execution and dependable merge gates | Yes: this is C00, the first implementation task | Dedicated test Postgres and explicit test connection; CI service database |
+| No local isolated PostgreSQL database | Running integration tests from this machine | Yes: CI owns a disposable PostgreSQL 18 service | Configure a dedicated local Postgres target as `TEST_DATABASE_URL`; never use the application Neon URL |
 | Hosting URL not selected | Public release, production callbacks, live webhook endpoint | Yes: does not block local MVP work | Select a Next.js-compatible host before C11; configure production URLs and secrets |
 | Initial customer/administrator bootstrap unverified | First real usable tenant | Yes | C01 provides an explicit bootstrap path from verified WorkOS ownership/membership; never promote the first arbitrary login |
 
@@ -38,15 +38,15 @@ These are setup dependencies, not reasons to pause all development. No further p
 
 ## Contract index and sequence
 
-All contracts are open. “Foundation exists” means some supporting code exists, not that acceptance has passed.
+Contract status reflects the evidence recorded below. “Implemented” does not imply live WorkOS or deployment acceptance.
 
 | ID | Deliverable | Depends on | State |
 | --- | --- | --- | --- |
-| [C00](contracts/C00-test-foundation.md) | Test harness, isolation, CI, TDD evidence | None | In progress; local gates pass, rerunning remote CI after correcting the audit SQLSTATE assertion |
+| [C00](contracts/C00-test-foundation.md) | Test harness, isolation, CI, TDD evidence | None | Complete; isolated PostgreSQL CI, unit, lint, build, and E2E gates pass |
 | [C01](contracts/C01-identity.md) | Real sign-in, tenant bootstrap, member synchronization | C00 | In progress; provider reconciliation, transactional upserts, and guarded bootstrap are implemented; API key, webhook delivery, and live acceptance remain |
-| [C02](contracts/C02-authorization.md) | Tenant context, office permissions, access lifecycle | C01 | Implementation complete; database audit immutability assertion and full regression rerun pending |
-| [C03](contracts/C03-offices-rooms.md) | Office and room management | C02 | In progress; scoped services, forms, and normalization migration are implemented; isolated PostgreSQL acceptance pending |
-| [C04](contracts/C04-people-assignments.md) | Staff directory, office access, room assignments | C02, C03 | Open; tables exist |
+| [C02](contracts/C02-authorization.md) | Tenant context, office permissions, access lifecycle | C01 | Implemented and PostgreSQL verified; authenticated browser/live WorkOS checks remain |
+| [C03](contracts/C03-offices-rooms.md) | Office and room management | C02 | Implemented and PostgreSQL verified; authenticated browser acceptance remains |
+| [C04](contracts/C04-people-assignments.md) | Staff directory, office access, room assignments | C02, C03 | Services and role-specific UI implemented; new PostgreSQL acceptance and two-connection race run pending |
 | [C05](contracts/C05-catalog-locations.md) | Item catalog and stock locations | C02, C03 | Open |
 | [C06](contracts/C06-ledger-receipts.md) | Atomic ledger, balances, stock receipts | C05 | Open |
 | [C07](contracts/C07-transfers.md) | Room deployment and returns | C06 | Open |
@@ -55,7 +55,7 @@ All contracts are open. “Foundation exists” means some supporting code exist
 | [C10](contracts/C10-live-dashboard.md) | Real dashboard and complete staff UI integration | C03–C09 | Open; preview design exists |
 | [C11](contracts/C11-release.md) | Complete journeys, deployment, operational readiness | C00–C10 | Open |
 
-C00 is currently in progress. It does not depend on WorkOS, a hosting provider, or Neon test storage: CI uses its own disposable PostgreSQL service. Keep C01 gated on a real WorkOS server key/webhook setup, but continue unit and service work that can be tested with an explicit provider adapter.
+C00 is complete. It does not depend on WorkOS, a hosting provider, or Neon test storage: CI uses its own disposable PostgreSQL service. Keep C01 live acceptance gated on a real WorkOS server key and webhook setup, but continue unit and service work that can be tested with an explicit provider adapter.
 
 Execution order: C00 → C01 → C02 → C03 → C04 → C05 → C06 → C07 → C08 → C09 → C10 → C11. Build each service with its usable UI slice; C10 connects cross-module overview data and checks consistency rather than postponing all UI to the end.
 

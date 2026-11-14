@@ -652,6 +652,50 @@ code {
   .ws-activity-row small { font-size: 9px; }
 }
 
+.pm-workspace { display: grid; gap: 16px; }
+.pm-member-list { display: grid; gap: 11px; }
+.pm-member-card { min-width: 0; border: 1px solid var(--ws-border); border-radius: 8px; background: #fff; overflow: hidden; }
+.pm-member-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; padding: 17px 19px; }
+.pm-member-heading h3 { margin: 0; font-size: 13px; font-weight: 600; }
+.pm-member-heading p { margin: 5px 0 0; color: var(--ws-muted); font-size: 11px; overflow-wrap: anywhere; }
+.pm-member-meta { display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: 8px; color: #69776d; font-size: 10px; text-align: right; }
+.pm-access-section { padding: 13px 19px 16px; border-top: 1px solid #edf0eb; }
+.pm-access-section h4 { margin: 0 0 10px; color: #52675b; font-size: 10px; font-weight: 700; letter-spacing: .4px; text-transform: uppercase; }
+.pm-access-list { display: flex; flex-wrap: wrap; gap: 7px; }
+.pm-access-revoke { display: inline-flex; align-items: center; gap: 8px; padding: 4px 5px 4px 9px; border: 1px solid #dce5dc; border-radius: 5px; background: #f8faf7; color: #344b3d; font-size: 10px; }
+.pm-access-revoke button, .pm-access-form button, .pm-assignment-form button, .pm-office-picker button { min-height: 32px; padding: 0 11px; border: 1px solid #23685b; border-radius: 5px; background: #23685b; color: #fff; font-size: 10px; font-weight: 600; }
+.pm-access-revoke button { min-height: 25px; padding-inline: 8px; border-color: #d8e0d7; color: #4c6354; background: #fff; }
+.pm-access-revoke button:disabled, .pm-access-form button:disabled, .pm-assignment-form button:disabled { opacity: .6; cursor: wait; }
+.pm-access-form { display: flex; align-items: center; flex-wrap: wrap; gap: 7px; margin-top: 11px; }
+.pm-access-form select, .pm-assignment-form select, .pm-office-picker select { min-width: 0; min-height: 34px; padding: 0 9px; border: 1px solid #dce4dc; border-radius: 5px; background: #fff; color: var(--ws-text); font-size: 11px; }
+.pm-access-form select { width: min(100%, 270px); }
+.pm-message { flex-basis: 100%; font-size: 10px; }
+.pm-message.is-success { color: #416b36; }
+.pm-message.is-error { color: #963e2e; }
+.pm-muted { margin: 7px 0; color: var(--ws-muted); font-size: 10px; line-height: 1.6; }
+.pm-assignment-form { padding: 13px 19px 17px; border-top: 1px solid #edf0eb; }
+.pm-assignment-label { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; margin-bottom: 8px; color: #52675b; font-size: 10px; font-weight: 600; }
+.pm-assignment-label small { color: var(--ws-muted); font-size: 10px; font-weight: 400; text-align: right; }
+.pm-assignment-controls { display: flex; gap: 8px; }
+.pm-assignment-controls select { flex: 1; }
+.pm-office-picker { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 11px 14px; background: #f7f9f6; border: 1px solid var(--ws-border); border-radius: 7px; }
+.pm-office-picker form { display: flex; align-items: center; gap: 8px; }
+.pm-office-picker label { color: #52675b; font-size: 10px; font-weight: 600; }
+.pm-office-picker > span { color: var(--ws-muted); font-size: 10px; }
+.pm-own-assignment { display: flex; align-items: center; gap: 13px; padding: 16px; }
+.pm-own-assignment h3 { margin: 0; font-size: 13px; }
+.pm-own-assignment p { margin: 5px 0 0; color: var(--ws-muted); font-size: 11px; }
+.pm-sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+.pm-workspace :is(button, input, select, a):focus-visible { outline: 3px solid #8ab2a1; outline-offset: 2px; }
+@media (max-width: 650px) {
+  .pm-member-heading { flex-direction: column; }
+  .pm-member-meta { justify-content: flex-start; text-align: left; }
+  .pm-office-picker { align-items: flex-start; flex-direction: column; }
+  .pm-office-picker form { flex-wrap: wrap; }
+  .pm-assignment-label { align-items: flex-start; flex-direction: column; gap: 4px; }
+  .pm-assignment-label small { text-align: left; }
+}
+
 .om-workspace { display: grid; gap: 18px; }
 .om-directory-heading, .om-directory-toolbar, .om-office-card, .om-office-card-main,
 .om-subpanel-heading, .om-form-actions, .om-archive-row, .om-room-heading, .om-pagination {

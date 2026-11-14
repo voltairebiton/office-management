@@ -47,6 +47,7 @@ No HR profiles, attendance, payroll, bulk imports, or per-seat assignment. Capac
 
 | Criterion | Test/check path | Red failure or live-check prerequisite | Green result | Commit/evidence |
 | --- | --- | --- | --- | --- |
-| Pending | — | — | — | — |
+| C04-AC1–AC7 | `tests/people-database.test.js`, `tests/unit/authorization.test.js`, `src/components/people-workspace.js` | Acceptance test was written before the service. The initial run stopped at a missing service import; this was setup feedback, not a behavioral red. Local PostgreSQL is unavailable because `TEST_DATABASE_URL` is unset. | Unit, build, lint, migration checks, and browser regressions pass locally. Real PostgreSQL acceptance and two-connection concurrency run in CI after this commit. | C04 implementation in progress; admin, manager, and self-only workspace views are wired. |
+| C04-AC8 | No invitations are sent by this workflow. | Live WorkOS invitation acceptance is deliberately outside the current office-access form. | No invitations are sent by automated tests or C04 actions. | Existing provider adapter remains the only boundary for a future invitation flow. |
 
 Do not mark complete based on a UI screenshot, a build alone, or mocked provider success alone.

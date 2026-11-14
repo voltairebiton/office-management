@@ -7,6 +7,7 @@ import {
   users,
 } from "../db/schema.js";
 import { getDatabase } from "../db/index.js";
+import { endAssignmentsForDeactivatedMembership } from "./people-service.js";
 
 function syncError(code, message) {
   return Object.assign(new Error(message), { code });
@@ -122,7 +123,7 @@ export function createDrizzleIdentityRepository(database = getDatabase()) {
           },
 
           async deactivateMembership(workosMembershipId) {
-            await transaction
+            const [membership] = await transaction
               .update(organizationMemberships)
               .set({ status: "inactive", updatedAt: new Date() })
               .where(
@@ -130,7 +131,9 @@ export function createDrizzleIdentityRepository(database = getDatabase()) {
                   organizationMemberships.workosMembershipId,
                   workosMembershipId,
                 ),
-              );
+              )
+              .returning();
+            if (membership) await endAssignmentsForDeactivatedMembership(transaction, membership);
           },
 
           async claimWorkOSEvent(values) {
