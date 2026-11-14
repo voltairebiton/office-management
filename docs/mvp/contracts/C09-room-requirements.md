@@ -1,6 +1,6 @@
 # C09 — Room targets and shortage visibility
 
-Status: Implementation complete; corrected PostgreSQL CI rerun pending. Dependencies: C04, C07, C08.
+Status: Implementation and PostgreSQL CI complete; authenticated WorkOS acceptance remains. Dependencies: C04, C07, C08.
 
 ## User outcome
 
@@ -45,9 +45,9 @@ No automatic replenishment, attendance-based targets, subscriptions, or cross-it
 
 | Criterion | Test/check path | Red failure or live-check prerequisite | Green result | Commit/evidence |
 | --- | --- | --- | --- | --- |
-| AC1–AC3 | tests/unit/room-requirements.test.js; tests/room-requirements-database.test.js | Unit cases failed against the initial calculation/validation stubs. The first CI run exposed a stale-version fixture that accidentally repeated the current target, which the service accepts idempotently. | Fixture now uses a different target with the current expected version; unit cases cover zero targets, exact targets, shortages, surplus, and untracked stock. Corrected PostgreSQL rerun is pending. | d7d7f6b + working tree; CI 43624751047 partial |
-| AC4–AC6 | tests/room-requirements-database.test.js | Local isolated TEST_DATABASE_URL is not configured. | The first CI run applied the migration and passed target listing, shortage aggregates, authorization, and stock-related SQL reads before the stale-version assertion. Corrected rerun will cover the remaining lifecycle assertions. | d7d7f6b + working tree; rerun pending |
-| AC5, AC7 | src/lib/room-requirement-service.js; tests/room-requirements-database.test.js | Corrected PostgreSQL rerun pending. | Query enforces tenant and assigned-office scope, stable pagination, item totals, and distinct room counts by office; shortage links still revalidate current deployment stock on submit. | Working tree; CI pending |
-| UI | src/components/room-needs-workspace.js; src/components/room-requirement-forms.js | Live WorkOS browser journey requires a configured staging user and organization. | Room target add/edit/remove, office/room/item/status/search filters, grouped shortage totals, and deployment shortcuts are implemented. Unit, lint, build, and public-preview mobile browser checks pass locally. | Working tree; live journey pending |
+| AC1–AC3 | tests/unit/room-requirements.test.js; tests/room-requirements-database.test.js | Unit cases first failed against the initial calculation/validation stubs; CI exposed and then corrected an idempotent stale-target fixture. | Zero targets, exact targets, shortages, surplus, untracked stock, and target lifecycle all pass in unit and fresh PostgreSQL tests. | [CI run 43628858147](https://github.com/voltairebiton/office-management/actions/runs/43628858147), commit `203e61b` |
+| AC4–AC6 | tests/room-requirements-database.test.js | Local isolated TEST_DATABASE_URL is not configured; CI supplies a disposable PostgreSQL 18 database. | Receipt, deployment, return, consumption, count correction, target removal/restoration, authorization, filters, and shortage aggregates pass against fresh PostgreSQL. | [CI run 43628858147](https://github.com/voltairebiton/office-management/actions/runs/43628858147), commit `203e61b` |
+| AC5, AC7 | src/lib/room-requirement-service.js; tests/room-requirements-database.test.js | Authenticated browser acceptance requires configured staging WorkOS identities. | Queries enforce tenant and assigned-office scope, stable pagination, item totals, and distinct room counts by office; deployment shortcuts revalidate current source stock. | [CI run 43628858147](https://github.com/voltairebiton/office-management/actions/runs/43628858147); live journey pending |
+| UI | src/components/room-needs-workspace.js; src/components/room-requirement-forms.js | Live WorkOS browser journey requires a configured staging user and organization. | Room target add/edit/remove, office/room/item/status/search filters, grouped shortage totals, and deployment shortcuts are implemented. Unit, lint, build, and public-preview mobile browser checks pass. | [CI run 43628858147](https://github.com/voltairebiton/office-management/actions/runs/43628858147); live journey pending |
 
 Do not mark complete based on a UI screenshot, a build alone, or mocked provider success alone.

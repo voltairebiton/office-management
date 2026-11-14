@@ -6,6 +6,7 @@ import { syncIdentityFromSession } from "@/lib/identity-sync";
 import { createDrizzleIdentityRepository } from "@/lib/identity-repository";
 import { getWorkOSIdentityProvider } from "@/lib/workos-client";
 import { loadAuthorizationContext } from "@/lib/authorization-context";
+import { reportOperationFailure } from "@/lib/diagnostics";
 
 export async function requireUser() {
   if (!getAuthConfiguration().ready) redirect("/setup");
@@ -29,8 +30,10 @@ export async function requireOrganization() {
       organizationId: identity.organization.id,
       membershipId: identity.membership.id,
     });
-  } catch {
-    redirect("/auth/error?code=workspace-verification-failed");
+  } catch (error) {
+    const requestId = reportOperationFailure("identity.workspace.verify", error);
+    const reference = requestId ? `&reference=${encodeURIComponent(requestId)}` : "";
+    redirect(`/auth/error?code=workspace-verification-failed${reference}`);
   }
   if (!authorization.active) redirect("/access-denied");
 

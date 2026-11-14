@@ -18,8 +18,8 @@ This follows the previously agreed minimum. Visitor management, QR refreshment o
 | WorkOS configuration | Office Management staging app has localhost:3107 callback and sign-out URLs; client ID, cookie secret, and callback configured; server API key and webhook secret still missing |
 | Database | Dedicated Neon project; Drizzle migrations for identity, offices/rooms/assignments, idempotent WorkOS webhook IDs, and immutable audit history |
 | Integrity tests | Fresh PostgreSQL migrations and identity, authorization, audit, office/room, and multi-connection suites pass in CI. C04 services and the separate-connection assignment race are now included in the pipeline. |
-| Operational features | C01 identity projection and C02 tenant/office authorization are implemented; live WorkOS acceptance remains. C03–C04 offices, rooms, people, and assignments pass PostgreSQL acceptance. C05 catalog and stock locations, C06–C07 receipts/deployments/returns, and C08 corrections pass PostgreSQL acceptance. C09’s stale-version fixture was corrected and is queued for CI rerun. C10 adds a live scoped overview, role-filtered navigation, and WorkOS-backed workspace settings. Authenticated journeys remain open. |
-| Automation | Local unit/lint/build/E2E gates pass. Fresh PostgreSQL CI runs migrations, database suites, unit tests, lint, build, and E2E. The C09/C10 CI rerun is pending. Local database integration requires an isolated `TEST_DATABASE_URL`, which is not configured on this machine. |
+| Operational features | C01 identity projection and C02 tenant/office authorization are implemented; live WorkOS acceptance remains. C03–C04 offices, rooms, people, and assignments pass PostgreSQL acceptance. C05 catalog and stock locations, C06–C07 receipts/deployments/returns, C08 corrections, C09 room requirements, and C10 live dashboard/settings all pass fresh PostgreSQL CI. Authenticated journeys remain open. |
+| Automation | Latest full CI on `203e61b` passes migrations, unit and PostgreSQL integration suites, lint, production build, and the browser suite. Current local unit/lint/build/E2E gates pass, including axe scans on all eight workspace views; the expanded browser and request-diagnostics checks await CI. Local database integration requires an isolated `TEST_DATABASE_URL`, which is not configured on this machine. |
 
 The public preview is never an authenticated acceptance environment. A successful build does not establish tenant isolation or complete sign-in. Existing work was not documented as test-first; TDD evidence starts with the contracts below.
 
@@ -51,8 +51,8 @@ Contract status reflects the evidence recorded below. “Implemented” does not
 | [C06](contracts/C06-ledger-receipts.md) | Atomic ledger, balances, stock receipts | C05 | Ledger and database acceptance pass; authenticated WorkOS receipt journey remains |
 | [C07](contracts/C07-transfers.md) | Room deployment and returns | C06 | Transfer and database acceptance pass; authenticated WorkOS movement journey remains |
 | [C08](contracts/C08-stock-corrections.md) | Consumption, damage, and counted-stock corrections | C06 | PostgreSQL suite passes in CI; authenticated UI journey remains |
-| [C09](contracts/C09-room-requirements.md) | Room inventory targets and shortages | C04, C07, C08 | Implementation complete; corrected PostgreSQL CI pending |
-| [C10](contracts/C10-live-dashboard.md) | Real dashboard and complete staff UI integration | C03–C09 | Implemented; PostgreSQL CI and live WorkOS acceptance pending |
+| [C09](contracts/C09-room-requirements.md) | Room inventory targets and shortages | C04, C07, C08 | Implemented and fresh PostgreSQL CI verified; authenticated WorkOS journey pending |
+| [C10](contracts/C10-live-dashboard.md) | Real dashboard and complete staff UI integration | C03–C09 | Implemented and fresh PostgreSQL CI verified; authenticated WorkOS journey pending |
 | [C11](contracts/C11-release.md) | Complete journeys, deployment, operational readiness | C00–C10 | Open |
 
 C00 is complete. It does not depend on WorkOS, a hosting provider, or Neon test storage: CI uses its own disposable PostgreSQL service. Keep C01 live acceptance gated on a real WorkOS server key and webhook setup, but continue unit and service work that can be tested with an explicit provider adapter.

@@ -426,7 +426,7 @@ code {
   --ws-pine: #173f3a;
   --ws-accent: #23685b;
   --ws-text: #243b37;
-  --ws-muted: #687873;
+  --ws-muted: #526157;
   --ws-border: #e2e7e2;
   background: #f6f7f4;
   color: var(--ws-text);
@@ -480,7 +480,7 @@ code {
 .ws-banner-divider { padding: 0 11px; color: #899f90; }
 .ws-main { max-width: 1640px; margin: auto; padding: 37px 38px 0; outline: none; }
 .ws-page-heading { display: flex; align-items: center; justify-content: space-between; gap: 20px; margin-bottom: 29px; }
-.ws-kicker { font-size: 9px; font-weight: 600; color: #6b8073; letter-spacing: 1.5px; margin: 0 0 10px; }
+.ws-kicker { font-size: 9px; font-weight: 600; color: #526157; letter-spacing: 1.5px; margin: 0 0 10px; }
 .ws-page-heading h1 { font-size: clamp(26px, 2.5vw, 34px); line-height: 1.15; letter-spacing: -1.2px; font-weight: 500; margin: 0 0 10px; }
 .ws-page-heading > div > p:last-child { font-size: 12px; color: var(--ws-muted); margin: 0; }
 .ws-context { display: inline-flex; gap: 8px; align-items: center; border: 1px solid #dce3d7; padding: 7px 11px; border-radius: 5px; font-size: 10px; color: #52654e; background: #f1f4ec; white-space: nowrap; }
@@ -502,7 +502,7 @@ code {
 .ws-table-scroll { overflow-x: auto; }
 .ws-table { width: 100%; text-align: left; border-collapse: collapse; white-space: nowrap; }
 .ws-table thead { background: #f7f9f6; border-top: 1px solid #edf0eb; border-bottom: 1px solid #edf0eb; }
-.ws-table th { padding: 10px 16px; color: #6a786e; font-weight: 500; font-size: 9px; }
+.ws-table th { padding: 10px 16px; color: #526157; font-weight: 500; font-size: 9px; }
 .ws-table td { padding: 16px; font-size: 11px; border-bottom: 1px solid #edf0eb; }
 .ws-table th:first-child, .ws-table td:first-child { padding-left: 23px; }
 .ws-table td strong { display: block; font-size: 11px; font-weight: 500; }
@@ -533,13 +533,13 @@ code {
 .ws-service-card { background: #e9eee2; border: 1px solid #dce3d3; border-radius: 8px; position: relative; overflow: hidden; padding: 25px 26px 24px; }
 .ws-service-tag { font-size: 8px; text-transform: uppercase; letter-spacing: 1.3px; color: #53684c; border: 1px solid #c9d4be; border-radius: 4px; padding: 4px 7px; display: inline-block; }
 .ws-service-card h2 { position: relative; font-size: 24px; line-height: 1.24; font-weight: 500; letter-spacing: -.7px; margin: 28px 0 12px; max-width: 260px; }
-.ws-service-card p { position: relative; max-width: 260px; font-size: 11px; color: #66765e; line-height: 1.8; margin: 0 0 20px; }
+.ws-service-card p { position: relative; max-width: 260px; font-size: 11px; color: #526157; line-height: 1.8; margin: 0 0 20px; }
 .ws-service-card a { position: relative; display: flex; align-items: center; gap: 12px; font-size: 10px; font-weight: 600; color: #3f5c39; }
 .ws-service-art { position: absolute; right: 12px; top: 28px; width: 120px; height: 115px; opacity: .21; color: #547345; transform: rotate(-14deg); }
 .ws-service-art > svg { position: absolute; top: 15px; right: 18px; z-index: 1; }
 .ws-art-square { position: absolute; width: 83px; height: 83px; border: 1px solid #547345; border-radius: 25px; right: 6px; top: 4px; transform: rotate(35deg); }
 .ws-art-dot { position: absolute; width: 9px; height: 9px; border-radius: 50%; background: #547345; left: 0; bottom: 10px; }
-.ws-footer { padding: 27px 0; margin-top: 14px; display: flex; justify-content: space-between; gap: 12px; font-size: 9px; color: #718071; }
+.ws-footer { padding: 27px 0; margin-top: 14px; display: flex; justify-content: space-between; gap: 12px; font-size: 9px; color: #526157; }
 .ws-footer-dot { margin: 0 9px; }
 .ws-foundation-notice { display: flex; gap: 12px; padding: 17px 20px; margin-bottom: 24px; background: #edf2e9; border: 1px solid #d7e1cf; border-radius: 7px; color: #3e5b3b; }
 .ws-foundation-notice strong { font-size: 12px; font-weight: 600; }
@@ -560,7 +560,7 @@ code {
 .ws-planned > p { font-size: 13px; color: var(--ws-muted); max-width: 520px; margin: 0 auto; line-height: 1.9; }
 .ws-planned-steps { display: grid; grid-template-columns: repeat(3, 1fr); text-align: left; gap: 16px; margin: 35px 0; }
 .ws-planned-steps > div { border-top: 1px solid #dce4d7; font-size: 11px; padding-top: 15px; }
-.ws-planned-steps span { display: block; font-size: 10px; color: #708565; margin-bottom: 9px; }
+.ws-planned-steps span { display: block; font-size: 10px; color: #526157; margin-bottom: 9px; }
 .ws-planned > .ws-planned-note { font-size: 11px; }
 .ws-settings { margin: 0 24px 24px; }
 .ws-settings > div { border-top: 1px solid var(--ws-border); padding: 18px 0; display: grid; grid-template-columns: 180px minmax(0, 1fr); gap: 20px; font-size: 12px; }

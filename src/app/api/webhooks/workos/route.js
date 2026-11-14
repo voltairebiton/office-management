@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createDrizzleIdentityRepository } from "@/lib/identity-repository";
 import { processWorkOSMembershipEvent } from "@/lib/identity-webhook";
 import { getWorkOSIdentityProvider } from "@/lib/workos-client";
+import { reportOperationFailure } from "@/lib/diagnostics";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -27,8 +28,9 @@ export async function POST(request) {
     });
   } catch (error) {
     const invalidSignature = error.code === "WEBHOOK_SIGNATURE_INVALID";
+    const requestId = invalidSignature ? null : reportOperationFailure("workos.webhook.verify", error);
     return NextResponse.json(
-      { error: invalidSignature ? "invalid_signature" : "webhook_unavailable" },
+      { error: invalidSignature ? "invalid_signature" : "webhook_unavailable", ...(requestId ? { reference: requestId } : {}) },
       { status: invalidSignature ? 400 : 503 },
     );
   }
@@ -42,8 +44,9 @@ export async function POST(request) {
     return NextResponse.json({ received: true, ...result });
   } catch (error) {
     const invalidEvent = error.code === "IDENTITY_WEBHOOK_INVALID";
+    const requestId = invalidEvent ? null : reportOperationFailure("workos.webhook.process", error);
     return NextResponse.json(
-      { error: invalidEvent ? "invalid_event" : "webhook_processing_unavailable" },
+      { error: invalidEvent ? "invalid_event" : "webhook_processing_unavailable", ...(requestId ? { reference: requestId } : {}) },
       { status: invalidEvent ? 400 : 503 },
     );
   }

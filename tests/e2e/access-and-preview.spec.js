@@ -1,4 +1,25 @@
 import { expect, test } from "@playwright/test";
+import AxeBuilder from "@axe-core/playwright";
+
+test("C10-AC7 workspace views have no serious or critical WCAG violations", async ({ page }) => {
+  for (const path of [
+    "/preview",
+    "/preview?view=offices",
+    "/preview?view=people",
+    "/preview?view=inventory",
+    "/preview?view=requirements",
+    "/preview?view=movements",
+    "/preview?view=refreshments",
+    "/preview?view=visitors",
+  ]) {
+    await page.goto(path);
+    const results = await new AxeBuilder({ page })
+      .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
+      .analyze();
+    const serious = results.violations.filter((violation) => ["serious", "critical"].includes(violation.impact));
+    expect(serious, JSON.stringify(serious, null, 2)).toEqual([]);
+  }
+});
 
 test("C00-AC3 public preview shows fictional data and planned features clearly", async ({ page }) => {
   await page.goto("/preview");
