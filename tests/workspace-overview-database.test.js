@@ -51,9 +51,9 @@ test("C10-AC2/AC3 loads active scoped counts, distinct assigned people, shortage
         { organizationId: organization.id, userId: employeeUser.id, workosMembershipId: `overview_employee_m_${suffix}`, role: "employee", status: "active" },
       ]).returning();
       const [north, south, archived] = await transaction.insert(offices).values([
-        { organizationId: organization.id, name: "North office", code: `N-${suffix.slice(0, 8)}` },
-        { organizationId: organization.id, name: "South office", code: `S-${suffix.slice(0, 8)}` },
-        { organizationId: organization.id, name: "Archived office", code: `A-${suffix.slice(0, 8)}`, isActive: false },
+        { organizationId: organization.id, name: "North office", code: `N-${suffix.slice(0, 8).toUpperCase()}` },
+        { organizationId: organization.id, name: "South office", code: `S-${suffix.slice(0, 8).toUpperCase()}` },
+        { organizationId: organization.id, name: "Archived office", code: `A-${suffix.slice(0, 8).toUpperCase()}`, isActive: false },
       ]).returning();
       const [northMeeting, northQuiet, southBoardroom] = await transaction.insert(rooms).values([
         { organizationId: organization.id, officeId: north.id, name: "Meeting room", code: "MEET" },
