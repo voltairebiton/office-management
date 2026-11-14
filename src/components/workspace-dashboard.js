@@ -60,7 +60,7 @@ function Movements({ rows, preview }) {
 }
 
 
-export function WorkspaceDashboard({ view = "overview", preview = false, data = emptyData, account, signOutAction }) {
+export function WorkspaceDashboard({ view = "overview", preview = false, data = emptyData, account, signOutAction, officeContent = null }) {
   const [office, setOffice] = useState("all");
   const [search, setSearch] = useState({ view, query: "" });
   const query = search.view === view ? search.query : "";
@@ -105,10 +105,10 @@ export function WorkspaceDashboard({ view = "overview", preview = false, data = 
       {preview && <div className="ws-preview-banner"><span><strong>Design preview</strong><span className="ws-banner-divider">/</span>Fictional sample data. Changes are not saved.</span><Link href="/dashboard">Open staff workspace <Icon name="arrow" size={14} /></Link></div>}
       <main id="workspace-main" className="ws-main" tabIndex={-1}>
         <div className="ws-page-heading"><div><p className="ws-kicker">{view === "overview" ? "THE EVERYDAY, ORGANIZED" : "YOUR OFFICE WORKSPACE"}</p><h1>{view === "overview" ? "Workspace overview" : current.label}</h1><p>{descriptions[view]}</p></div><span className="ws-context"><span className="ws-small-dot" />{preview ? selectedOffice?.name || "All locations" : "Foundation stage"}</span></div>
-        {!preview && <div className="ws-foundation-notice"><Icon name="check" size={21} /><div><strong>You’re signed in. Let’s build your workspace.</strong><p>Office provisioning, staff assignments, and inventory operations are still being connected. <Link href="/preview">View the dashboard design with sample data →</Link></p></div></div>}
+        {!preview && view !== "offices" && <div className="ws-foundation-notice"><Icon name="check" size={21} /><div><strong>You’re signed in. Let’s build your workspace.</strong><p>Staff assignments and inventory operations are still being connected. <Link href="/preview">View the dashboard design with sample data →</Link></p></div></div>}
         {searchable && <div className="ws-toolbar"><label className="ws-search"><Icon name="search" size={18} /><input type="search" placeholder={`Search ${current.label.toLowerCase()}…`} aria-label={`Search ${current.label.toLowerCase()}`} value={query} onChange={event => setSearch({ view, query: event.target.value })} /></label><span>{preview ? "Sample records" : "No operational records connected"}</span></div>}
         {view === "overview" && overview}
-        {view === "offices" && <Panel href={href} title="Office directory" subtitle="Rooms and assigned employees by location"><OfficeList offices={offices} /></Panel>}
+        {view === "offices" && (officeContent ?? <Panel href={href} title="Office directory" subtitle="Rooms and assigned employees by location"><OfficeList offices={offices} /></Panel>)}
         {view === "requirements" && <Panel href={href} title="Room inventory requirements" subtitle="Quantity targets and deployment gaps"><NeedsTable data={data} preview={preview} rows={matching(needs)} /></Panel>}
         {view === "movements" && <Panel href={href} title="Movement history" subtitle="Receipts, transfers, and room deployments"><Movements preview={preview} rows={matching(scoped(data.movements))} /></Panel>}
         {view === "people" && <Panel href={href} title="People & room assignments" subtitle="Assigned headcounts only. Attendance is a future feature.">{matching(scoped(data.people)).length ? <div className="ws-table-scroll"><table className="ws-table"><caption className="ws-sr-only">Sample employee room assignments</caption><thead><tr><th>Team member</th><th>Role</th><th>Assigned room</th><th>Office</th></tr></thead><tbody>{matching(scoped(data.people)).map(row => <tr key={row.name}><td><strong>{row.name}</strong></td><td>{row.role}</td><td>{row.room}</td><td>{data.offices.find(item => item.id === row.office)?.name}</td></tr>)}</tbody></table></div> : <Empty icon={current.icon} title={preview ? "No matching people" : "A place for your team"}>{preview ? "Try another office or search term." : "Staff synchronization and office access are part of the next milestone."}</Empty>}</Panel>}

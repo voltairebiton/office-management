@@ -29,6 +29,13 @@
       "when": 1794670512037,
       "tag": "0003_cooing_xorn",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1794671461363,
+      "tag": "0004_green_cobalt_man",
+      "breakpoints": true
     }
   ]
 }

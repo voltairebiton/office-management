@@ -15,6 +15,13 @@ import {
 } from "../src/db/schema.js";
 import { resolveTestDatabaseUrl } from "../scripts/test-database-config.js";
 
+function hasSqlState(error, state) {
+  for (let current = error; current; current = current.cause) {
+    if (current.code === state) return true;
+  }
+  return false;
+}
+
 test("C02-AC7 audit rows are transactionally scoped and immutable in Postgres", async () => {
   const testDatabaseUrl = resolveTestDatabaseUrl({
     testDatabaseUrl: process.env.TEST_DATABASE_URL,
@@ -23,6 +30,7 @@ test("C02-AC7 audit rows are transactionally scoped and immutable in Postgres", 
   });
   const { db, pool } = createDatabase(testDatabaseUrl);
   const suffix = randomUUID();
+  const officeCode = `A-${suffix.toUpperCase()}`;
   const rollbackFixture = new Error("ROLLBACK_AUDIT_FIXTURE");
 
   try {
@@ -48,7 +56,7 @@ test("C02-AC7 audit rows are transactionally scoped and immutable in Postgres", 
           .returning();
         const [office] = await transaction
           .insert(offices)
-          .values({ organizationId: organization.id, name: "Audit office", code: `A-${suffix}` })
+          .values({ organizationId: organization.id, name: "Audit office", code: officeCode })
           .returning();
         const context = buildAuthorizationContext({
           actor: { id: user.id },
@@ -62,8 +70,8 @@ test("C02-AC7 audit rows are transactionally scoped and immutable in Postgres", 
           resourceId: office.id,
           officeId: office.id,
           requestId: `request_${suffix}`,
-          before: { name: "Audit office", code: `A-${suffix}` },
-          after: { name: "Audit office west", code: `A-${suffix}` },
+          before: { name: "Audit office", code: officeCode },
+          after: { name: "Audit office west", code: officeCode },
         });
 
         await transaction.execute(sql.raw("SAVEPOINT audit_update"));
@@ -72,7 +80,7 @@ test("C02-AC7 audit rows are transactionally scoped and immutable in Postgres", 
             .update(auditEvents)
             .set({ operation: "office.deleted" })
             .where(eq(auditEvents.id, audit.id)),
-          (error) => error.code === "55000",
+          (error) => hasSqlState(error, "55000"),
         );
         await transaction.execute(sql.raw("ROLLBACK TO SAVEPOINT audit_update"));
         await transaction.execute(sql.raw("RELEASE SAVEPOINT audit_update"));
@@ -80,7 +88,7 @@ test("C02-AC7 audit rows are transactionally scoped and immutable in Postgres", 
         await transaction.execute(sql.raw("SAVEPOINT audit_delete"));
         await assert.rejects(
           transaction.delete(auditEvents).where(eq(auditEvents.id, audit.id)),
-          (error) => error.code === "55000",
+          (error) => hasSqlState(error, "55000"),
         );
         await transaction.execute(sql.raw("ROLLBACK TO SAVEPOINT audit_delete"));
         await transaction.execute(sql.raw("RELEASE SAVEPOINT audit_delete"));
@@ -88,7 +96,7 @@ test("C02-AC7 audit rows are transactionally scoped and immutable in Postgres", 
         await transaction.execute(sql.raw("SAVEPOINT audit_truncate"));
         await assert.rejects(
           transaction.execute(sql.raw("TRUNCATE audit_events")),
-          (error) => error.code === "55000",
+          (error) => hasSqlState(error, "55000"),
         );
         await transaction.execute(sql.raw("ROLLBACK TO SAVEPOINT audit_truncate"));
         await transaction.execute(sql.raw("RELEASE SAVEPOINT audit_truncate"));
@@ -98,7 +106,7 @@ test("C02-AC7 audit rows are transactionally scoped and immutable in Postgres", 
           .from(auditEvents)
           .where(eq(auditEvents.id, audit.id));
         assert.equal(stored.operation, "office.updated");
-        assert.deepEqual(stored.after, { name: "Audit office west", code: `A-${suffix}` });
+        assert.deepEqual(stored.after, { name: "Audit office west", code: officeCode });
         throw rollbackFixture;
       }),
       (error) => error === rollbackFixture,

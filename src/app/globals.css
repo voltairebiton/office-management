@@ -651,3 +651,85 @@ code {
   .ws-activity-row strong { font-size: 11px; }
   .ws-activity-row small { font-size: 9px; }
 }
+
+.om-workspace { display: grid; gap: 18px; }
+.om-directory-heading, .om-directory-toolbar, .om-office-card, .om-office-card-main,
+.om-subpanel-heading, .om-form-actions, .om-archive-row, .om-room-heading, .om-pagination {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+}
+.om-directory-heading { margin: 2px 0 4px; }
+.om-directory-heading h2 { font-size: 19px; letter-spacing: -.4px; font-weight: 600; margin: 0 0 5px; }
+.om-directory-heading p:last-child, .om-subpanel-heading p, .om-office-card p, .om-room-heading p,
+.om-archive-row p { color: var(--ws-muted); font-size: 12px; margin: 0; }
+.om-eyebrow { color: #708273; font-size: 9px; font-weight: 700; letter-spacing: 1.3px; margin: 0 0 6px; }
+.om-back-link, .om-open-link { color: var(--ws-accent); font-weight: 600; font-size: 12px; white-space: nowrap; }
+.om-directory-toolbar { margin: 0 0 1px; }
+.om-directory-toolbar > span { color: var(--ws-muted); font-size: 11px; }
+.om-search-form { display: grid; gap: 6px; width: min(100%, 390px); }
+.om-search-form label { color: #586c60; font-size: 11px; font-weight: 600; }
+.om-search-form > div { display: flex; gap: 7px; }
+.om-search-form input, .om-field input { min-width: 0; width: 100%; border: 1px solid #dce4dc; border-radius: 5px; padding: 10px 11px; color: var(--ws-text); background: #fff; font-size: 12px; }
+.om-search-form button { border: 1px solid #23685b; border-radius: 5px; padding: 0 15px; background: #23685b; color: white; font-size: 11px; font-weight: 600; }
+.om-status-filter { display: inline-flex; align-items: center; gap: 6px; color: #586c60; font-size: 10px; white-space: nowrap; }
+.om-status-filter select { max-width: 110px; border: 1px solid #dce4dc; border-radius: 5px; padding: 8px 9px; background: #fff; color: var(--ws-text); font-size: 11px; }
+.om-office-list, .om-room-list { display: grid; gap: 10px; }
+.om-office-card, .om-room-card { min-width: 0; border: 1px solid var(--ws-border); border-radius: 7px; padding: 16px; background: white; }
+.om-office-card { justify-content: flex-start; }
+.om-office-card-icon { display: grid; place-items: center; width: 39px; height: 39px; flex: 0 0 auto; border-radius: 8px; color: #54715e; background: #eff3eb; font-size: 23px; }
+.om-office-card-main { align-items: flex-start; flex-direction: column; gap: 3px; flex: 1; min-width: 0; }
+.om-office-name { color: var(--ws-text); font-size: 13px; font-weight: 600; }
+.om-office-card p { overflow-wrap: anywhere; font-size: 10px; }
+.om-office-card p span, .om-room-heading p span { padding: 0 5px; color: #99a49c; }
+.om-status { display: inline-flex; align-items: center; border-radius: 99px; padding: 4px 8px; white-space: nowrap; font-size: 10px; font-weight: 600; }
+.om-status.is-active { background: #edf4e9; color: #446838; }
+.om-status.is-archived { background: #f0f1ef; color: #68736b; }
+.om-open-link { display: inline-flex; align-items: center; gap: 7px; }
+.om-open-link span { font-size: 17px; font-weight: 400; }
+.om-subpanel { min-width: 0; overflow: hidden; border: 1px solid var(--ws-border); border-radius: 8px; background: #fff; }
+.om-subpanel-heading { align-items: flex-start; padding: 19px 20px 16px; border-bottom: 1px solid #edf0eb; }
+.om-subpanel-heading h3 { margin: 0 0 4px; font-size: 15px; font-weight: 600; letter-spacing: -.2px; }
+.om-subpanel-heading p { font-size: 11px; }
+.om-subpanel-heading > div > .om-status { margin-bottom: 9px; }
+.om-form { padding: 17px 20px 19px; }
+.om-form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 16px; }
+.om-field { display: grid; align-content: start; gap: 6px; min-width: 0; color: #53675c; font-size: 11px; font-weight: 600; }
+.om-field > span > span { color: #a3623c; }
+.om-field input { font-weight: 400; }
+.om-field input[aria-invalid="true"] { border-color: #ba6d55; }
+.om-field-error { color: #9a4732; font-size: 10px; font-weight: 500; }
+.om-form-actions { justify-content: flex-start; flex-wrap: wrap; margin-top: 15px; }
+.om-primary, .om-danger { min-height: 36px; border: 1px solid #23685b; border-radius: 5px; padding: 0 14px; background: #23685b; color: white; font-size: 11px; font-weight: 600; }
+.om-primary:disabled, .om-danger:disabled { opacity: .6; cursor: wait; }
+.om-danger { color: #8a4131; background: #fff; border-color: #d9b6aa; }
+.om-inline-form { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; }
+.om-feedback { margin: 0; font-size: 11px; }
+.om-feedback.is-success { color: #416b36; }
+.om-feedback.is-error { color: #963e2e; }
+.om-feedback p { margin: 4px 0 0; font-size: 10px; }
+.om-archive-row { justify-content: flex-start; flex-wrap: wrap; padding: 0 20px 17px; }
+.om-archive-row p { flex: 1 1 260px; font-size: 10px; }
+.om-room-list { padding: 13px 16px 0; }
+.om-room-toolbar { padding: 14px 20px 0; }
+.om-room-card { padding: 0; overflow: hidden; }
+.om-room-heading { padding: 14px 16px; }
+.om-room-heading strong { font-size: 12px; font-weight: 600; }
+.om-room-heading p { margin-top: 4px; font-size: 10px; }
+.om-room-card .om-form { border-top: 1px solid #edf0eb; padding-inline: 16px; }
+.om-room-card .om-form-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.om-room-card .om-archive-row { border-top: 1px solid #edf0eb; padding: 12px 16px; }
+.om-create-room { margin-top: 14px; border-top: 1px solid #edf0eb; }
+.om-create-room h4 { margin: 0; padding: 18px 20px 0; font-size: 12px; font-weight: 600; }
+.om-empty { padding: 28px 20px; text-align: center; color: var(--ws-text); }
+.om-empty strong { font-size: 12px; }
+.om-empty p { max-width: 460px; margin: 5px auto 0; color: var(--ws-muted); font-size: 11px; }
+.om-pagination { justify-content: center; margin: 3px 0 2px; font-size: 11px; color: var(--ws-muted); }
+.om-pagination a { color: var(--ws-accent); font-weight: 600; }
+@media (max-width: 650px) {
+  .om-office-card { align-items: flex-start; flex-wrap: wrap; }
+  .om-office-card-main { flex: 1 1 calc(100% - 60px); }
+  .om-office-card > .om-status { margin-left: 50px; }
+  .om-open-link { margin-left: auto; }
+  .om-form-grid, .om-room-card .om-form-grid { grid-template-columns: 1fr; }
+  .om-directory-heading, .om-directory-toolbar { align-items: flex-start; flex-direction: column; }
+  .om-directory-toolbar { gap: 8px; }
+}

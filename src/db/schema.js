@@ -115,7 +115,9 @@ export const offices = pgTable(
       table.code,
     ),
     check("offices_name_not_empty", sql`length(btrim(${table.name})) > 0`),
-    check("offices_code_not_empty", sql`length(btrim(${table.code})) > 0`),
+    check("offices_name_max_length", sql`length(${table.name}) <= 120`),
+    check("offices_code_format", sql`${table.code} ~ '^[A-Z0-9][A-Z0-9_-]{0,31}$'`),
+    check("offices_address_max_length", sql`${table.address} is null or length(${table.address}) <= 240`),
   ],
 );
 
@@ -185,7 +187,8 @@ export const rooms = pgTable(
     }),
     check("rooms_capacity_nonnegative", sql`${table.capacity} >= 0`),
     check("rooms_name_not_empty", sql`length(btrim(${table.name})) > 0`),
-    check("rooms_code_not_empty", sql`length(btrim(${table.code})) > 0`),
+    check("rooms_name_max_length", sql`length(${table.name}) <= 120`),
+    check("rooms_code_format", sql`${table.code} ~ '^[A-Z0-9][A-Z0-9_-]{0,31}$'`),
   ],
 );
 

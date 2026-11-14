@@ -18,8 +18,8 @@ This follows the previously agreed minimum. Visitor management, QR refreshment o
 | WorkOS configuration | Office Management staging app has localhost:3107 callback and sign-out URLs; client ID, cookie secret, and callback configured; server API key and webhook secret still missing |
 | Database | Dedicated Neon project; Drizzle migrations for identity, offices/rooms/assignments, idempotent WorkOS webhook IDs, and immutable audit history |
 | Integrity tests | Existing live PostgreSQL suite passes: 12 behavior subtests plus their parent, reported as 13 tests |
-| Operational features | C01 identity projection is implemented; office authorization service, business CRUD, inventory tables, and stock operations remain |
-| Automation | C00 local unit/lint/build/E2E gates pass. The first GitHub run failed immediately with zero jobs/logs; workflow context was corrected, and the next run will validate the fresh PostgreSQL migration/integration sequence |
+| Operational features | C01 identity projection and C02 tenant/office authorization are implemented. C03 office/room CRUD, scoped search, pagination, audit, stale-edit conflicts, and restrictive archives are in progress. Inventory tables and stock operations remain |
+| Automation | C00 local unit/lint/build/E2E gates pass. A remote PostgreSQL run exposed an audit-test SQLSTATE wrapper assertion; the assertion is fixed and the next run will verify all migrations and database suites together |
 
 The public preview is never an authenticated acceptance environment. A successful build does not establish tenant isolation or complete sign-in. Existing work was not documented as test-first; TDD evidence starts with the contracts below.
 
@@ -42,10 +42,10 @@ All contracts are open. “Foundation exists” means some supporting code exist
 
 | ID | Deliverable | Depends on | State |
 | --- | --- | --- | --- |
-| [C00](contracts/C00-test-foundation.md) | Test harness, isolation, CI, TDD evidence | None | In progress; unit/E2E pass locally, remote CI pending |
+| [C00](contracts/C00-test-foundation.md) | Test harness, isolation, CI, TDD evidence | None | In progress; local gates pass, rerunning remote CI after correcting the audit SQLSTATE assertion |
 | [C01](contracts/C01-identity.md) | Real sign-in, tenant bootstrap, member synchronization | C00 | In progress; provider reconciliation, transactional upserts, and guarded bootstrap are implemented; API key, webhook delivery, and live acceptance remain |
-| [C02](contracts/C02-authorization.md) | Tenant context, office permissions, access lifecycle | C01 | In progress; tenant/office contexts, capability checks, and immutable audit storage are implemented |
-| [C03](contracts/C03-offices-rooms.md) | Office and room management | C02 | Open; tables exist |
+| [C02](contracts/C02-authorization.md) | Tenant context, office permissions, access lifecycle | C01 | Implementation complete; database audit immutability assertion and full regression rerun pending |
+| [C03](contracts/C03-offices-rooms.md) | Office and room management | C02 | In progress; scoped services, forms, and normalization migration are implemented; isolated PostgreSQL acceptance pending |
 | [C04](contracts/C04-people-assignments.md) | Staff directory, office access, room assignments | C02, C03 | Open; tables exist |
 | [C05](contracts/C05-catalog-locations.md) | Item catalog and stock locations | C02, C03 | Open |
 | [C06](contracts/C06-ledger-receipts.md) | Atomic ledger, balances, stock receipts | C05 | Open |

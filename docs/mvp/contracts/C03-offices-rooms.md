@@ -1,6 +1,6 @@
 # C03 — Office and room management
 
-Status: Open. Dependencies: C02.
+Status: In progress. Dependencies: C02.
 
 ## User outcome
 
@@ -44,6 +44,8 @@ No floor-plan editor, seat map, attendance, or room booking. MVP archive default
 
 | Criterion | Test/check path | Red failure or live-check prerequisite | Green result | Commit/evidence |
 | --- | --- | --- | --- | --- |
-| Pending | — | — | — | — |
+| C03-AC1 | `tests/unit/office-validation.test.js` | Initial run failed because `office-validation.js` did not exist | 9 assertions pass locally for normalization, timezone, malformed values, and pagination | In progress; database CI pending |
+| C03-AC2, C03-AC4–AC7 | `tests/offices-database.test.js`, office workspace forms | Isolated PostgreSQL service run required; authenticated browser flow needs WorkOS server key | Pending | In progress |
+| C03-AC3 | `drizzle/0004_green_cobalt_man.sql` | Migration checks normalized code collisions before applying data changes | Pending fresh-database migration CI | In progress |
 
 Do not mark complete based on a UI screenshot, a build alone, or mocked provider success alone.
