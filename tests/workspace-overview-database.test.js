@@ -104,7 +104,7 @@ test("C10-AC2/AC3 loads active scoped counts, distinct assigned people, shortage
       }, transaction);
       await receiveStock(adminContext, {
         officeId: north.id, locationId: storage.id, itemId: tissues.id, quantity: 4,
-        reason: "Opening balance", requestKey: randomUUID(),
+        reason: "opening", requestKey: randomUUID(),
       }, transaction);
       await transferStock(adminContext, {
         officeId: north.id, sourceLocationId: storage.id, destinationLocationId: northRoomLocation.id,
