@@ -45,6 +45,9 @@ No inter-office transfer, shipping, reservations, or automatic restocking.
 
 | Criterion | Test/check path | Red failure or live-check prerequisite | Green result | Commit/evidence |
 | --- | --- | --- | --- | --- |
-| Pending | — | — | — | — |
+| C07-AC1 / AC5 | `tests/unit/transfer-validation.test.js` | Tests first ran against inert stubs: valid transfer input normalized to null, invalid amounts and same-location requests were accepted, and fingerprints were empty. | Four normalization and request-fingerprint cases pass. | Local implementation; commit and CI evidence pending. |
+| C07-AC5 / AC7 | `tests/unit/transfer-draft.test.js` | Retry persistence first returned false for a valid pending transfer. | Pending transfer key/payload restore, invalid same-location draft rejection, and clear-after-resolution checks pass. | Local implementation; commit and CI evidence pending. |
+| C07-AC1–AC7 | `tests/transfers-database.test.js`, `src/lib/transfer-service.js` | Local isolated PostgreSQL is not configured; the application database was not used. Fresh migration, paired-ledger rollback, competing withdrawals, opposite directions, duplicate requests, returns, archival history, and audit checks are queued for disposable CI PostgreSQL. | Pending CI. | Pending. |
+| C07-AC7 UI | `src/components/catalog-forms.js`, `src/components/catalog-workspace.js` | Authenticated deployment journey requires a real configured WorkOS staging session. | Deployment/return/transfer form, source availability recheck, balances, and history compile; production build passes locally. | Pending authenticated browser acceptance. |
 
 Do not mark complete based on a UI screenshot, a build alone, or mocked provider success alone.

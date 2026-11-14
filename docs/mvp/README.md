@@ -49,7 +49,7 @@ Contract status reflects the evidence recorded below. “Implemented” does not
 | [C04](contracts/C04-people-assignments.md) | Staff directory, office access, room assignments | C02, C03 | Services and role-specific UI implemented; PostgreSQL acceptance and two-connection race pass; live WorkOS browser validation remains |
 | [C05](contracts/C05-catalog-locations.md) | Item catalog and stock locations | C02, C03 | PostgreSQL acceptance passes; authenticated browser validation remains |
 | [C06](contracts/C06-ledger-receipts.md) | Atomic ledger, balances, stock receipts | C05 | Ledger and database acceptance pass; authenticated WorkOS receipt journey remains |
-| [C07](contracts/C07-transfers.md) | Room deployment and returns | C06 | Open |
+| [C07](contracts/C07-transfers.md) | Room deployment and returns | C06 | Transfer service and UI implemented; unit, lint, and build pass locally; PostgreSQL CI pending |
 | [C08](contracts/C08-stock-corrections.md) | Consumption, damage, and counted-stock corrections | C06 | Open |
 | [C09](contracts/C09-room-requirements.md) | Room inventory targets and shortages | C04, C07, C08 | Open |
 | [C10](contracts/C10-live-dashboard.md) | Real dashboard and complete staff UI integration | C03–C09 | Open; preview design exists |

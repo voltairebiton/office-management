@@ -8,6 +8,7 @@ import {
   receiveStockAction,
   saveCatalogItemAction,
   saveStorageLocationAction,
+  transferStockAction,
 } from "@/app/actions";
 import {
   clearReceiptDraft,
@@ -16,6 +17,13 @@ import {
   saveReceiptDraft,
   subscribeReceiptDraft,
 } from "@/lib/receipt-draft";
+import {
+  clearTransferDraft,
+  getTransferDraftSnapshot,
+  parseTransferDraft,
+  saveTransferDraft,
+  subscribeTransferDraft,
+} from "@/lib/transfer-draft";
 
 const initialState = { ok: false, error: null, message: "" };
 
@@ -201,5 +209,148 @@ export function ReceiveStockForm({ officeId, locations, items, initialRequestKey
     {savedDraft && hydrated && <p className="pm-muted" role="status">A pending receipt was restored. Submitting it again safely retries the same request.</p>}
     {!items.length && <p className="pm-muted">Add an active catalog item before receiving stock.</p>}
     {!locations.length && <p className="pm-muted">Create an active storeroom or pantry before receiving stock.</p>}
+  </form>;
+}
+
+function transferLocations(intent, direction, locations, excludeId = "") {
+  const kind = intent === "deployment"
+    ? direction === "source" ? "storage" : "room"
+    : intent === "return"
+      ? direction === "source" ? "room" : "storage"
+      : null;
+  return locations.filter((location) => (!kind || location.kind === kind) && location.id !== excludeId);
+}
+
+export function TransferStockForm({ officeId, locations, items, initialRequestKey }) {
+  const [state, formAction, pending] = useActionState(transferStockAction, initialState);
+  const [manualRequestKey, setManualRequestKey] = useState(null);
+  const [manualDraft, setManualDraft] = useState(null);
+  const savedDraftText = useSyncExternalStore(
+    (callback) => subscribeTransferDraft(officeId, callback),
+    () => getTransferDraftSnapshot(browserStorage(), officeId),
+    () => "",
+  );
+  const hydrated = useSyncExternalStore(() => () => {}, () => true, () => false);
+  const savedDraft = parseTransferDraft(savedDraftText);
+  const hasStorage = locations.some((location) => location.kind === "storage");
+  const hasRoom = locations.some((location) => location.kind === "room");
+  const initialIntent = hasStorage && hasRoom ? "deployment" : "transfer";
+  const defaultSources = transferLocations(initialIntent, "source", locations);
+  const defaultDestinations = transferLocations(initialIntent, "destination", locations, defaultSources[0]?.id ?? "");
+  const defaultDraft = {
+    itemId: items[0]?.id ?? "",
+    sourceLocationId: defaultSources[0]?.id ?? "",
+    destinationLocationId: defaultDestinations[0]?.id ?? "",
+    quantity: "1",
+    intent: initialIntent,
+    reference: "",
+  };
+  const draft = manualDraft ?? (savedDraft ? {
+    sourceLocationId: savedDraft.sourceLocationId,
+    destinationLocationId: savedDraft.destinationLocationId,
+    itemId: savedDraft.itemId,
+    quantity: savedDraft.quantity,
+    intent: savedDraft.intent,
+    reference: savedDraft.reference,
+  } : defaultDraft);
+  const requestKey = state?.ok && state.transactionId
+    ? state.nextRequestKey
+    : savedDraft?.requestKey ?? manualRequestKey ?? initialRequestKey;
+  const [storageWarning, setStorageWarning] = useState(false);
+  const sourceOptions = transferLocations(draft.intent, "source", locations);
+  const destinationOptions = transferLocations(draft.intent, "destination", locations, draft.sourceLocationId);
+
+  useEffect(() => {
+    if (savedDraftText && state?.ok && state.transactionId) clearTransferDraft(browserStorage(), officeId);
+    if (savedDraftText && !parseTransferDraft(savedDraftText)) clearTransferDraft(browserStorage(), officeId);
+  }, [officeId, savedDraftText, state?.ok, state?.transactionId]);
+
+  function updateField(event) {
+    const { name, value } = event.currentTarget;
+    if (savedDraft) {
+      clearTransferDraft(browserStorage(), officeId);
+      setManualRequestKey(newRequestKey());
+    }
+    setManualDraft((current) => {
+      const next = { ...(current ?? draft), [name]: value };
+      if (name === "intent") {
+        const sources = transferLocations(value, "source", locations);
+        const source = sources.some((location) => location.id === next.sourceLocationId) ? next.sourceLocationId : sources[0]?.id ?? "";
+        const destinations = transferLocations(value, "destination", locations, source);
+        const destination = destinations.some((location) => location.id === next.destinationLocationId)
+          ? next.destinationLocationId
+          : destinations[0]?.id ?? "";
+        next.sourceLocationId = source;
+        next.destinationLocationId = destination;
+      } else if (name === "sourceLocationId" && next.destinationLocationId === value) {
+        next.destinationLocationId = transferLocations(next.intent, "destination", locations, value)[0]?.id ?? "";
+      }
+      return next;
+    });
+  }
+
+  function persistPendingSubmission(event) {
+    const data = new FormData(event.currentTarget);
+    const saved = saveTransferDraft(browserStorage(), officeId, {
+      requestKey,
+      sourceLocationId: String(data.get("sourceLocationId") ?? ""),
+      destinationLocationId: String(data.get("destinationLocationId") ?? ""),
+      itemId: String(data.get("itemId") ?? ""),
+      quantity: String(data.get("quantity") ?? ""),
+      intent: String(data.get("intent") ?? ""),
+      reference: String(data.get("reference") ?? ""),
+    });
+    setStorageWarning(!saved);
+  }
+
+  const disabled = pending || !hydrated || !items.length;
+  const fieldErrors = state?.error?.fieldErrors ?? {};
+  return <form action={formAction} className="om-form pm-catalog-form pm-receipt-form" onSubmit={persistPendingSubmission}>
+    <input type="hidden" name="officeId" value={officeId} />
+    <input type="hidden" name="requestKey" value={requestKey} />
+    <div className="om-form-grid">
+      <label className="om-field" htmlFor={`transfer-intent-${officeId}`}><span>Movement *</span>
+        <select id={`transfer-intent-${officeId}`} name="intent" value={draft.intent} onChange={updateField} required disabled={disabled}>
+          <option value="deployment">Deploy to a room</option><option value="return">Return to storage</option><option value="transfer">Transfer between locations</option>
+        </select>
+      </label>
+      <label className="om-field" htmlFor={`transfer-item-${officeId}`}><span>Item *</span>
+        <select id={`transfer-item-${officeId}`} name="itemId" value={draft.itemId} onChange={updateField} required disabled={disabled} aria-invalid={Boolean(fieldErrors.itemId)}>
+          <option value="">Choose an active item</option>
+          {!items.some((item) => item.id === draft.itemId) && draft.itemId && <option value={draft.itemId}>Previously selected item — choose an active item</option>}
+          {items.map((item) => <option key={item.id} value={item.id}>{item.sku} · {item.name} ({item.unit})</option>)}
+        </select>
+        {fieldErrors.itemId && <small className="om-field-error">{fieldErrors.itemId}</small>}
+      </label>
+      <label className="om-field" htmlFor={`transfer-source-${officeId}`}><span>From *</span>
+        <select id={`transfer-source-${officeId}`} name="sourceLocationId" value={draft.sourceLocationId} onChange={updateField} required disabled={disabled || !sourceOptions.length} aria-invalid={Boolean(fieldErrors.sourceLocationId)}>
+          <option value="">Choose source</option>{sourceOptions.map((location) => <option key={location.id} value={location.id}>{location.code} · {location.name}</option>)}
+        </select>
+        {fieldErrors.sourceLocationId && <small className="om-field-error">{fieldErrors.sourceLocationId}</small>}
+      </label>
+      <label className="om-field" htmlFor={`transfer-destination-${officeId}`}><span>To *</span>
+        <select id={`transfer-destination-${officeId}`} name="destinationLocationId" value={draft.destinationLocationId} onChange={updateField} required disabled={disabled || !destinationOptions.length} aria-invalid={Boolean(fieldErrors.destinationLocationId)}>
+          <option value="">Choose destination</option>{destinationOptions.map((location) => <option key={location.id} value={location.id}>{location.code} · {location.name}</option>)}
+        </select>
+        {fieldErrors.destinationLocationId && <small className="om-field-error">{fieldErrors.destinationLocationId}</small>}
+      </label>
+      <label className="om-field" htmlFor={`transfer-quantity-${officeId}`}><span>Quantity *</span>
+        <input id={`transfer-quantity-${officeId}`} type="number" name="quantity" min="1" max="2147483647" step="1" inputMode="numeric" value={draft.quantity} onChange={updateField} required disabled={disabled} aria-invalid={Boolean(fieldErrors.quantity)} />
+        {fieldErrors.quantity && <small className="om-field-error">{fieldErrors.quantity}</small>}
+      </label>
+      <label className="om-field pm-receipt-reference" htmlFor={`transfer-reference-${officeId}`}><span>Reference (optional)</span>
+        <input id={`transfer-reference-${officeId}`} name="reference" value={draft.reference} onChange={updateField} maxLength={120} placeholder="Room setup or return note" disabled={disabled} />
+        {fieldErrors.reference && <small className="om-field-error">{fieldErrors.reference}</small>}
+      </label>
+    </div>
+    <div className="om-form-actions">
+      <button className="om-primary" type="submit" disabled={disabled || !sourceOptions.length || !destinationOptions.length}>{pending ? "Recording movement…" : !hydrated ? "Preparing secure retry…" : "Record movement"}</button>
+      <Message state={state} />
+    </div>
+    {storageWarning && <p className="om-feedback is-error" role="status">This browser could not save the pending retry key. Keep this page open until the movement result appears.</p>}
+    {savedDraft && hydrated && <p className="pm-muted" role="status">A pending movement was restored. Submitting it again safely retries the same request.</p>}
+    {!locations.length && <p className="pm-muted">Set up active storage locations and room locations before moving stock.</p>}
+    {locations.length === 1 && <p className="pm-muted">Add another location before recording a transfer.</p>}
+    {!items.length && <p className="pm-muted">Add an active catalog item before moving stock.</p>}
   </form>;
 }

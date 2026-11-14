@@ -30,6 +30,7 @@ import {
   updateStorageLocation,
 } from "@/lib/catalog-service";
 import { receiveStock } from "@/lib/stock-service";
+import { transferStock } from "@/lib/transfer-service";
 
 function value(formData, field) {
   const entry = formData.get(field);
@@ -305,6 +306,34 @@ export async function receiveStockAction(previousState, formData) {
       message: `${result.movement.quantityDelta} ${result.movement.itemUnit} of ${result.movement.itemName} received. Balance: ${result.balanceAfter}.`,
       transactionId: result.transactionId,
       movementId: result.movement.id,
+      nextRequestKey: randomUUID(),
+    };
+  } catch (error) {
+    return actionError(error);
+  }
+}
+
+export async function transferStockAction(previousState, formData) {
+  const { authorization } = await requireOrganization();
+  try {
+    const result = await transferStock(authorization, {
+      officeId: value(formData, "officeId"),
+      sourceLocationId: value(formData, "sourceLocationId"),
+      destinationLocationId: value(formData, "destinationLocationId"),
+      itemId: value(formData, "itemId"),
+      requestKey: value(formData, "requestKey"),
+      quantity: value(formData, "quantity"),
+      intent: value(formData, "intent"),
+      reference: value(formData, "reference"),
+    });
+    revalidatePath("/dashboard");
+    const unit = result.outgoing.itemUnit;
+    const name = result.outgoing.itemName;
+    const verb = { deployment: "deployed", return: "returned", transfer: "transferred" }[result.outgoing.reason];
+    return {
+      ok: true,
+      message: `${result.outgoing.quantityDelta * -1} ${unit} of ${name} ${verb}. Source balance: ${result.sourceBalanceAfter}; destination balance: ${result.destinationBalanceAfter}.`,
+      transactionId: result.transactionId,
       nextRequestKey: randomUUID(),
     };
   } catch (error) {

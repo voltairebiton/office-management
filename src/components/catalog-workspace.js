@@ -7,6 +7,7 @@ import {
   EnsureRoomLocationForm,
   ReceiveStockForm,
   StorageLocationForm,
+  TransferStockForm,
 } from "@/components/catalog-forms";
 import { hasCapability } from "@/lib/authorization";
 import { getOffice, listOffices, listRooms } from "@/lib/office-service";
@@ -160,9 +161,10 @@ export async function CatalogWorkspace({ context, searchParams = {} }) {
   let movements = { rows: [], total: 0, page: 1, pageSize: 20, totalPages: 0 };
   let receiptItems = { rows: [], total: 0 };
   let receiptLocations = { rows: [], total: 0 };
+  let transferLocations = { rows: [], total: 0 };
   if (officeId) {
     try {
-      [locations, rooms, balances, movements, receiptItems, receiptLocations] = await Promise.all([
+      [locations, rooms, balances, movements, receiptItems, receiptLocations, transferLocations] = await Promise.all([
         listStockLocations(context, officeId, {
           q: searchParams.locQ ?? "",
           status: searchParams.locStatus ?? "active",
@@ -174,6 +176,7 @@ export async function CatalogWorkspace({ context, searchParams = {} }) {
         listStockMovements(context, officeId, { page: searchParams.movementPage ?? 1, pageSize: 20 }),
         listCatalogItems(context, { status: "active", page: 1, pageSize: 50 }),
         listStockLocations(context, officeId, { status: "active", kind: "storage", page: 1, pageSize: 50 }),
+        listStockLocations(context, officeId, { status: "active", page: 1, pageSize: 50 }),
       ]);
       roomLocations = await listStockLocations(context, officeId, {
         status: "all",
@@ -205,6 +208,13 @@ export async function CatalogWorkspace({ context, searchParams = {} }) {
     {office && <section className="om-subpanel">
       <div className="om-subpanel-heading"><div><h3>On-hand stock</h3><p>{balances.total} item-location {balances.total === 1 ? "balance" : "balances"} at {office.name}.</p></div></div>
       <div className="pm-catalog-body"><StockBalances result={balances} officeId={officeId} /></div>
+    </section>}
+
+    {office && <section className="om-subpanel">
+      <div className="om-subpanel-heading"><div><h3>Deploy, return, or transfer</h3><p>Move stock within {office.name}. Source availability is checked and updated atomically when the movement is saved.</p></div></div>
+      {canManageLocations ? <TransferStockForm key={officeId} officeId={officeId} locations={transferLocations.rows} items={receiptItems.rows} initialRequestKey={randomUUID()} />
+        : <EmptyPanel title="Movement access required" message="Your role can view stock but cannot deploy, return, or transfer it." />}
+      {(receiptItems.total > receiptItems.rows.length || transferLocations.total > transferLocations.rows.length) && <p className="pm-muted pm-selector-note">The movement selectors show the first 50 active items and locations.</p>}
     </section>}
 
     {office && <section className="om-subpanel">
